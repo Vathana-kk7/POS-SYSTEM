@@ -14,7 +14,7 @@ class AuthService
 
     public function register($dto)
     {
-        $user = $this->repo->create([w
+        $user = $this->repo->create([
             'name' => $dto->name,
             'email' => $dto->email,
             'password' => Hash::make($dto->password),
