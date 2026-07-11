@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             //
             $table->string('google_id')->nullable()->after('email');
-        $table->string('password')->nullable()->change(); // អនុញ្ញាតឱ្យ password ទៅជា null ព្រោះឡុកអុីនតាម Google មិនបាច់មាន password ទេ
+            $table->string('password')->nullable()->change(); // អនុញ្ញាតឱ្យ password ទៅជា null ព្រោះឡុកអុីនតាម Google មិនបាច់មាន password ទេ
         });
     }
 

@@ -1,11 +1,10 @@
 <?php
 
-namespace App\DOT;
-// DTO
-class RegisterDTO
+namespace App\DTO\Auth;
+
+class LoginDTO
 {
     public function __construct(
-        public string $name,
         public string $email,
         public string $password
     ) {}
