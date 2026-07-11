@@ -12,4 +12,17 @@ class BrandRepository implements BrandRepositoryInterface{
     public function all(){
         return Brand::all();
     }
+    public function findById(string $id){
+        return Brand::findOrFail($id);
+    }
+    public function update(string $id,array $data){
+        $brand=Brand::findOrFail($id);
+        $brand->update($data);
+        return $brand;
+    }
+    public function delete($id){
+        $brand= Brand::findOrFail($id);
+        $brand->delete($id);
+        return $brand;
+    }
 }

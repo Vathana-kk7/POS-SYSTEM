@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
 
 /*
@@ -18,6 +20,8 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('auth/google', [AuthController::class, 'redirectToGoogle']);
 Route::get('auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 Route::apiResource('brand', BrandController::class);
+Route::apiResource("category",CategoryController::class);
+Route::apiResource("product",ProductController::class);
 
 /*
 |--------------------------------------------------------------------------

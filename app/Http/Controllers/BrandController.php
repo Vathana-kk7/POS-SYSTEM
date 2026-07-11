@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\DTO\Brand\CreateBrandDTO;
+use App\DTO\Brand\UpdateBrandDTO;
 use App\Http\Requests\Brand\StoreBrandRequest;
+use App\Http\Requests\Brand\UpdateBrandRequest;
 use App\Models\Brand;
 use App\Services\BrandService;
 use Illuminate\Http\Request;
@@ -63,9 +65,19 @@ class BrandController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Brand $brand)
+    public function show(string $id)
     {
-        //
+        try {
+            $result=$this->BrandService->getbrandById($id);
+            return response()->json([
+                "status"=>"success",
+                "data"=>$result,
+            ],200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message" => $th->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -79,16 +91,43 @@ class BrandController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Brand $brand)
+    public function update(UpdateBrandRequest $request, string $id)
     {
-        //
+        try {
+            $result=$this->BrandService->update(
+                $id,
+                new UpdateBrandDTO(
+                    $request->name,
+                    $request->status,
+                )
+            );
+            return response()->json([
+                "status"=>"Success",
+                "message"=>"Update Successfully",
+                "data"=>$result
+            ],200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message"=>$th->getMessage(),
+            ],500);
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Brand $brand)
+    public function destroy(string $id)
     {
-        //
+        try {
+            $this->BrandService->deletebrand($id);
+            return response()->json([
+                "status"=>"success",
+               "message" => "User deleted"
+            ],200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message"=>$th->getMessage(),
+            ],500);
+        }
     }
 }

@@ -23,7 +23,7 @@ class UserRepository implements UserRepositoryInterface
     }
     public function update(string $id, array $data): User
     {
-        $user = $this->findById($id);
+        $user=$this->findById($id);
         $user->update($data);
         return $user->refresh();
     }

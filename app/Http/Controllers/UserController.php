@@ -7,7 +7,6 @@ use App\DTO\User\UpdateUserDTO; // ១. បានបន្ថែម use ត្�
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Services\UserService;
-use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
@@ -77,7 +76,7 @@ class UserController extends Controller
     }
 
     // UPDATE USER
-    public function update(Request $request, string $id)
+    public function update(UpdateUserRequest $request, string $id)
     {
         try {
             // កែសម្រួលឱ្យហៅ $this->userService ដូចគ្នាទាំងអស់

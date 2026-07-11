@@ -34,14 +34,14 @@ class UserService
     public function updateUser($id, UpdateUserDTO $dto)
     {
         $data = [
-            'name'    => $dto->name,
-            'email'   => $dto->email,
-            'role_id' => $dto->role_id,
+            'name'=> $dto->name,
+            'email'=> $dto->email,
+            'role_id'=> $dto->role_id,
         ];
         if ($dto->password) {
             $data['password'] = Hash::make($dto->password);
         }
-        return $this->repo->update($id, $data)->load('role');
+        return $this->repo->update($id,$data)->load('role');
     }
     public function deleteUser($id)
     {
