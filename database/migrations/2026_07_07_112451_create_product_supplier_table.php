@@ -16,6 +16,10 @@ return new class extends Migration
             $table->foreignId("product_id")->constrained("products")->restrictOnDelete();
             $table->foreignId("supplier_id")->constrained("suppliers")->restrictOnDelete();
             $table->timestamps();
+            $table->unique([
+                'product_id',
+                'supplier_id'
+            ]);
         });
     }
 

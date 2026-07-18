@@ -14,6 +14,10 @@ return new class extends Migration
         Schema::create('bank', function (Blueprint $table) {
             $table->id();
             $table->string("name");
+            $table->string("account_name");
+            $table->string("account_number");
+            $table->string("qr_code")->nullable();
+            $table->string("status");
             $table->timestamps();
         });
     }

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class StockMovement extends Model
 {
     use HasFactory;
+    protected $table="stock_movements_tabel";
     protected $fillable = [
         'product_id',
         'user_id',

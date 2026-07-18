@@ -1,7 +1,6 @@
 <?php
 namespace App\DTO\Product;
 
-use Illuminate\Http\UploadedFile;
 
 class CreateProductDTO{
     public function __construct(
@@ -16,6 +15,6 @@ class CreateProductDTO{
         public float $selling_price,
         public int $brand_id,
         public int $category_id,
-
+        public array $supplier_ids,
     ){}
 }

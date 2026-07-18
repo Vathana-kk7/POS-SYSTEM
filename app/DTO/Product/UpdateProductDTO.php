@@ -13,6 +13,6 @@ class UpdateProductDTO{
         public float $selling_price,
         public int $brand_id,
         public int $category_id,
-
+        public array $supplier_ids,
     ){}
 }

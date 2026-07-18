@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('orderpayment_method', function (Blueprint $table) {
             $table->id();
+            $table->decimal("amount",10,2);
+            $table->string("transaction_id")->nullable();
+            $table->string("payment_status");
+            $table->timestamp("paid_at")->nullable();
             $table->foreignId("order_id")->constrained("order")->restrictOnDelete();
             $table->foreignId("bank_id")->constrained("bank")->restrictOnDelete();
             $table->timestamps();

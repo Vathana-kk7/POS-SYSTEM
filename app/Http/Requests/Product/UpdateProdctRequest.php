@@ -11,7 +11,7 @@ class UpdateProdctRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -20,9 +20,25 @@ class UpdateProdctRequest extends FormRequest
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
-    {
-        return [
-            //
-        ];
-    }
+{
+    // យក product id ចេញពី route params
+    $productId = $this->route('product');
+
+    return [
+        "name" => "required|string",
+        "stock_qty" => "required|integer",
+        "cost_price" => "required|numeric",
+        "description" => "nullable|string",
+        // លើកលែង product id នេះចេញ មិនបាច់គិត unique ឡើយពេល update
+        "sku" => "required|string|unique:products,sku," . $productId,
+        "image" => "nullable|string",
+        "min_stock_level" => "required|integer",
+        "status" => "required|string",
+        "selling_price" => "required|numeric",
+        "brand_id" => "required|integer|exists:brands,id",
+        "category_id" => "required|integer|exists:categories,id",
+        "supplier_ids" => "required|array",
+        "supplier_ids.*" => "required|integer|exists:suppliers,id",
+    ];
+}
 }

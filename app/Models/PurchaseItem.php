@@ -9,7 +9,7 @@ class PurchaseItem extends Model
 {
     use HasFactory;
 
-
+    protected $table = 'purchase_item';
     protected $fillable = [
         "purchase_id",
         "product_id",
