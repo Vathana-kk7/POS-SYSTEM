@@ -2,19 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\DTO\Customer\CreateCustomerDTO;
-use App\DTO\Customer\UpdateCustomerDTO;
-use App\Http\Requests\Category\StoreCategoryRequest;
-use App\Http\Requests\Customer\StoreCustomerRequest;
-use App\Http\Requests\Customer\UpdateCustomerRequest;
-use App\Models\Customer;
-use App\Services\CustomerService;
-use Illuminate\Http\Request;
+use App\DTO\Bank\CreateBankDTO;
+use App\DTO\Bank\UpdateBankDTO;
+use App\Http\Requests\Bank\StoreBankRequest;
+use App\Http\Requests\Bank\UpdateBankRequest;
+use App\Services\BankService;
 
-class CustomerController extends Controller
+class BankController extends Controller
 {
     public function __construct(
-        private CustomerService $CustomerService
+        private BankService $BankService
     ){}
     /**
      * Display a listing of the resource.
@@ -22,7 +19,7 @@ class CustomerController extends Controller
     public function index()
     {
         try {
-            $result=$this->CustomerService->all();
+            $result=$this->BankService->all();
             return response()->json([
                 "status"=>"Create Success",
                 "data"=>$result,
@@ -45,14 +42,16 @@ class CustomerController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCustomerRequest $request)
+    public function store(StoreBankRequest $request)
     {
         try {
-            $result=$this->CustomerService->create(
-                new CreateCustomerDTO(
+            $result=$this->BankService->create(
+                new CreateBankDTO(
                     $request->name,
-                    $request->phone,
-                    $request->address,
+                    $request->account_name,
+                    $request->account_number,
+                    $request->qr_code,
+                    $request->status,
                 )
             );
             return response()->json([
@@ -72,7 +71,7 @@ class CustomerController extends Controller
     public function show(string $id)
     {
         try {
-            $result=$this->CustomerService->findById($id);
+            $result=$this->BankService->findById($id);
             return response()->json([
                 "status"=>"Create Success",
                 "data"=>$result,
@@ -87,23 +86,22 @@ class CustomerController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Customer $customer)
-    {
-        //
-    }
+
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(string $id, UpdateCustomerRequest $request)
+    public function update(string $id, UpdateBankRequest $request)
     {
         try {
-            $result=$this->CustomerService->update(
+            $result=$this->BankService->update(
                 $id,
-                new UpdateCustomerDTO(
+                new UpdateBankDTO(
                     $request->name,
-                    $request->phone,
-                    $request->address,
+                    $request->account_name,
+                    $request->account_number,
+                    $request->qr_code,
+                    $request->status,
                 )
             );
             return $result;
@@ -120,7 +118,7 @@ class CustomerController extends Controller
     public function destroy(string $id)
     {
         try {
-            $result=$this->CustomerService->delete($id);
+            $result=$this->BankService->delete($id);
             return response()->json([
                 "message"=>"Delete Success",
             ],200);

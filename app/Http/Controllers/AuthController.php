@@ -8,6 +8,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\DTO\Auth\RegisterDTO;
 use App\DTO\Auth\LoginDTO;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 //AuthController
 
@@ -29,29 +30,42 @@ class AuthController extends Controller
     }
 
     public function login(LoginRequest $request)
-    {
-        $result = $this->auth->login(
-            new LoginDTO(
-                $request->email,
-                $request->password
-            )
-        );
+{
+    $result = $this->auth->login(
+        new LoginDTO(
+            $request->email,
+            $request->password
+        )
+    );
 
-        if ($result['status'] === 'error') {
-            return response()->json($result, 401);
-        }
-
-        return response()->json($result, 200);
+    if ($result['status'] === 'error') {
+        return response()->json($result, 401);
     }
+
+
+
+    // បង្កើត Session ID ថ្មីផ្ញើទៅ Client (Postman នឹងទទួលCookie ត្រង់នេះ)
+    $request->session()->regenerate();
+
+    return response()->json([
+        "status" => "success",
+        "message" => $result["message"],
+        "data" => $result["data"]
+    ]);
+}
 
     //Logout
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        auth()->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
 
         return response()->json([
-            'status' => 'success',
-            'message' => 'Logged out successfully'
+            'status'=>'success',
+            'message'=>'Logged out successfully'
         ]);
     }
 
@@ -60,24 +74,26 @@ class AuthController extends Controller
 // ១. មុខងារបញ្ជូន User ទៅកាន់ Google
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->stateless()->redirect();
+        return Socialite::driver('google')->redirect();
     }
 // ២. មុខងារទទួលទិន្នន័យមកវិញពី Google ពេល User វាយ Email/Password ត្រូវ
-    public function handleGoogleCallback()
+   public function handleGoogleCallback()
 {
     try {
-        $googleUser = Socialite::driver('google')->stateless()->user();
+        $googleUser = Socialite::driver('google')->user();
 
         $result = $this->auth->handleGoogleLogin($googleUser);
 
-        return response()->json($result, 200);
+        if ($result['status'] !== 'success') {
+            return redirect('http://localhost:5173/login');
+        }
+
+        session()->regenerate();
+
+        return redirect('http://localhost:5173/auth/google/callback');
 
     } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Something went wrong with Google Login',
-            'error' => $e->getMessage()
-        ], 500);
+        return redirect('http://localhost:5173/login');
     }
 }
 }

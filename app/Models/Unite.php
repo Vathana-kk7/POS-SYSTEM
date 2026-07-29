@@ -11,6 +11,6 @@ class Unite extends Model
     protected $table="unite";
     protected $fillable = [
         "name",
-        "simble",
+        "symbol",
     ];
 }

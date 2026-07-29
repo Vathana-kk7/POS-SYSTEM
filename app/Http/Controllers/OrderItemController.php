@@ -2,19 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\DTO\Customer\CreateCustomerDTO;
-use App\DTO\Customer\UpdateCustomerDTO;
-use App\Http\Requests\Category\StoreCategoryRequest;
-use App\Http\Requests\Customer\StoreCustomerRequest;
-use App\Http\Requests\Customer\UpdateCustomerRequest;
-use App\Models\Customer;
-use App\Services\CustomerService;
-use Illuminate\Http\Request;
+use App\DTO\OrderItem\CreateOrderItemDTO;
+use App\DTO\OrderItem\UpdateOrderItemDTO;
+use App\Http\Requests\OrderItem\StoreOrderItemRequest;
+use App\Http\Requests\OrderItem\UpdateOrderItemRequest;
+use App\Services\OrderItemService;
 
-class CustomerController extends Controller
+class OrderItemController extends Controller
 {
     public function __construct(
-        private CustomerService $CustomerService
+        private OrderItemService $OrderItemService
     ){}
     /**
      * Display a listing of the resource.
@@ -22,7 +19,7 @@ class CustomerController extends Controller
     public function index()
     {
         try {
-            $result=$this->CustomerService->all();
+            $result=$this->OrderItemService->all();
             return response()->json([
                 "status"=>"Create Success",
                 "data"=>$result,
@@ -45,14 +42,17 @@ class CustomerController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCustomerRequest $request)
+    public function store(StoreOrderItemRequest $request)
     {
         try {
-            $result=$this->CustomerService->create(
-                new CreateCustomerDTO(
-                    $request->name,
-                    $request->phone,
-                    $request->address,
+            $result=$this->OrderItemService->create(
+                new CreateOrderItemDTO(
+                    $request->product_id,
+                    $request->order_id,
+                    $request->quantity,
+                    $request->unit_price,
+                    $request->discount,
+                    $request->subtotal,
                 )
             );
             return response()->json([
@@ -72,7 +72,7 @@ class CustomerController extends Controller
     public function show(string $id)
     {
         try {
-            $result=$this->CustomerService->findById($id);
+            $result=$this->OrderItemService->findById($id);
             return response()->json([
                 "status"=>"Create Success",
                 "data"=>$result,
@@ -87,23 +87,23 @@ class CustomerController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Customer $customer)
-    {
-        //
-    }
+
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(string $id, UpdateCustomerRequest $request)
+    public function update(string $id, UpdateOrderItemRequest $request)
     {
         try {
-            $result=$this->CustomerService->update(
+            $result=$this->OrderItemService->update(
                 $id,
-                new UpdateCustomerDTO(
-                    $request->name,
-                    $request->phone,
-                    $request->address,
+                new UpdateOrderItemDTO(
+                    $request->product_id,
+                    $request->order_id,
+                    $request->quantity,
+                    $request->unit_price,
+                    $request->discount,
+                    $request->subtotal,
                 )
             );
             return $result;
@@ -120,7 +120,7 @@ class CustomerController extends Controller
     public function destroy(string $id)
     {
         try {
-            $result=$this->CustomerService->delete($id);
+            $result=$this->OrderItemService->delete($id);
             return response()->json([
                 "message"=>"Delete Success",
             ],200);

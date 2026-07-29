@@ -3,96 +3,62 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BankController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderItemController;
+use App\Http\Controllers\OrderPaymentMethodController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\PurchaseItemController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\UniteController;
 use App\Http\Controllers\UserController;
 
-/*
-|--------------------------------------------------------------------------
-| PUBLIC ROUTES
-|--------------------------------------------------------------------------
-*/
-
-Route::post('/register', [AuthController::class, 'register']);
+// Public Routes
 Route::post('/login', [AuthController::class, 'login']);
-
+Route::post('/register', [AuthController::class, 'register']);
 Route::get('auth/google', [AuthController::class, 'redirectToGoogle']);
 Route::get('auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
-Route::apiResource('brand', BrandController::class);
-Route::apiResource("category",CategoryController::class);
-Route::apiResource("product",ProductController::class);
-Route::apiResource("supplier",SupplierController::class);
-Route::apiResource("purchase",PurchaseController::class);
-Route::apiResource("purchaseItem",PurchaseItemController::class);
-Route::apiResource("stockMovement",StockMovementController::class);
 
-/*
-|--------------------------------------------------------------------------
-| PROTECTED ROUTES (LOGIN REQUIRED)
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth:sanctum', 'role:Admin'])->get('/admin', function () {
-    return response()->json([
-        'message' => 'Welcome Admin 👑',
-        'user' => auth()->user()->name,
-        'role' => auth()->user()->role->name
-    ]);
-});
-Route::middleware(['auth:sanctum', 'role:Manager'])->get('/manager-test', function () {
-    return response()->json([
-        'message' => 'Welcome Manager',
-        'user' => auth()->user()->name,
-        'role' => auth()->user()->role->name
-    ]);
-});
+Route::get('/test-auth', function (Request $request) {
+    return $request->user();
+})->middleware('auth:sanctum');
+// Protected Routes
 Route::middleware('auth:sanctum')->group(function () {
 
-    // 👤 Current user
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
-
-    // 🚪 Logout
     Route::post('/logout', [AuthController::class, 'logout']);
-
-    /*
-    |--------------------------------------------------------------------------
-    | ADMIN ONLY
-    |--------------------------------------------------------------------------
-    */
+    // 🔑 បន្ថែម Route នេះសម្រាប់ឲ្យ React ទាញយក User profile តាមរយៈ Sanctum Cookie
+    Route::get('/user', function (Request $request) {
+        return response()->json($request->user());
+    });
+    // Admin Only
     Route::middleware('role:Admin')->group(function () {
-
         Route::apiResource('users', UserController::class);
-
+        Route::apiResource('brand', BrandController::class);
+        Route::apiResource('category', CategoryController::class);
+        Route::apiResource('bank', BankController::class);
+        Route::apiResource('orderPaymentMethod', OrderPaymentMethodController::class);
+        Route::apiResource('unite', UniteController::class);
     });
 
-    /*
-    |--------------------------------------------------------------------------
-    | ADMIN + MANAGER
-    |--------------------------------------------------------------------------
-    */
-    // Route::middleware('role:Admin,Manager')->group(function () {
+    // Admin + Manager
+    Route::middleware('role:Admin,Manager')->group(function () {
+        Route::apiResource('product', ProductController::class);
+        Route::apiResource('supplier', SupplierController::class);
+        Route::apiResource('purchase', PurchaseController::class);
+        Route::apiResource('purchaseItem', PurchaseItemController::class);
+        Route::apiResource('stockMovement', StockMovementController::class);
+    });
 
-    //     Route::get('/products', [ProductController::class, 'index']);
-    //     Route::post('/products', [ProductController::class, 'store']);
-    //     Route::put('/products/{id}', [ProductController::class, 'update']);
-    //     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
-    // });
-
-    /*
-    |--------------------------------------------------------------------------
-    | ALL ROLES (SALE SYSTEM)
-    |--------------------------------------------------------------------------
-    */
-    // Route::middleware('role:Admin,Manager,Staff')->group(function () {
-
-    //     Route::post('/sales', [\App\Http\Controllers\SaleController::class, 'store']);
-    //     Route::get('/sales', [\App\Http\Controllers\SaleController::class, 'index']);
-    // });
+    // Admin + Manager + Staff
+    Route::middleware('role:Admin,Manager,Staff')->group(function () {
+        Route::apiResource('customer', CustomerController::class);
+        Route::apiResource('order', OrderController::class);
+        Route::apiResource('orderItem', OrderItemController::class);
+    });
 
 });
