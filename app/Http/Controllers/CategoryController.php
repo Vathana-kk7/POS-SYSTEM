@@ -61,7 +61,7 @@ class CategoryController extends Controller
     }
     public function destroy(string $id){
         try {
-            $result=$this->CategoryService->delete($id);
+            $this->CategoryService->delete($id);
             return response()->json([
                 "status"=>"success",
                 "message"=>"Category was deleted",

@@ -17,8 +17,20 @@ class BrandService{
         ]);
         return $result;
     }
-    public function getAllUsers(){
-        return $this->repo->all();
+    // public function getAllBrand(int $perPage = 10){
+    //     // return $this->repo->all();
+    //     return $this->repo->paginate($perPage);
+    // }
+    public function getAllBrand($perPage, array $filters = [])
+    {
+        return $this->repo->all(
+            $perPage,
+            $filters
+        );
+    }
+    public function getBrandStats()
+    {
+        return $this->repo->getBrandStats();
     }
     public function getbrandById($id){
         return $this->repo->findById($id);
@@ -33,7 +45,8 @@ class BrandService{
         return $data;
     }
     //Delete Brand
-    public function deletebrand($id){
+    public function delete(string $id){
         return $this->repo->delete($id);
     }
+
 }

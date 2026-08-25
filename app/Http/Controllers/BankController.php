@@ -118,7 +118,7 @@ class BankController extends Controller
     public function destroy(string $id)
     {
         try {
-            $result=$this->BankService->delete($id);
+            $this->BankService->delete($id);
             return response()->json([
                 "message"=>"Delete Success",
             ],200);

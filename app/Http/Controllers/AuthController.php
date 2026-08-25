@@ -71,29 +71,34 @@ class AuthController extends Controller
 
 
     //google
-// ១. មុខងារបញ្ជូន User ទៅកាន់ Google
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->redirect();
+        return Socialite::driver('google')->stateless()->redirect();
     }
-// ២. មុខងារទទួលទិន្នន័យមកវិញពី Google ពេល User វាយ Email/Password ត្រូវ
-   public function handleGoogleCallback()
-{
-    try {
-        $googleUser = Socialite::driver('google')->user();
 
-        $result = $this->auth->handleGoogleLogin($googleUser);
+    public function handleGoogleCallback(Request $request)
+    {
+        try {
+            $googleUser = Socialite::driver('google')->stateless()->user();
 
-        if ($result['status'] !== 'success') {
-            return redirect('http://localhost:5173/login');
+            $result = $this->auth->handleGoogleLogin($googleUser);
+
+            if ($result['status'] !== 'success') {
+                return redirect($this->getFrontendCallbackUrl('/login'));
+            }
+
+            $request->session()->regenerate();
+
+            return redirect($this->getFrontendCallbackUrl('/auth/callback'));
+        } catch (\Exception $e) {
+            return redirect($this->getFrontendCallbackUrl('/login'));
         }
-
-        session()->regenerate();
-
-        return redirect('http://localhost:5173/auth/google/callback');
-
-    } catch (\Exception $e) {
-        return redirect('http://localhost:5173/login');
     }
-}
+
+    private function getFrontendCallbackUrl(string $path): string
+    {
+        $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+
+        return rtrim($frontendUrl, '/') . $path;
+    }
 }

@@ -17,10 +17,17 @@ class BrandController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $brand=$this->BrandService->getAllUsers();
+            $perPage = $request->integer('per_page', 10);
+            //Filter
+            $filter=[
+                'search'=>$request->input('search'),
+                'status'=>$request->input('status'),
+            ];
+            $brand = $this->BrandService->getAllBrand($perPage,$filter);
+            // $brand=$this->BrandService->getAllBrand();
             return response()->json([
                 "status" => "success",
                 "data" => $brand
@@ -113,21 +120,50 @@ class BrandController extends Controller
         }
     }
 
+    public function stats()
+    {
+        try {
+            $stats = $this->BrandService->getBrandStats();
+
+            return response()->json([
+                "status" => "success",
+                "data" => $stats,
+            ], 200);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                "status" => "error",
+                "message" => $th->getMessage(),
+            ], 500);
+        }
+    }
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
         try {
-            $this->BrandService->deletebrand($id);
+
+            $this->BrandService->delete($id);
+
             return response()->json([
-                "status"=>"success",
-               "message" => "User deleted"
-            ],200);
+                "status" => "success",
+                "message" => "Brand deleted successfully",
+            ], 200);
+
         } catch (\Throwable $th) {
+
+            \Log::error("Delete Brand Failed", [
+                "brand_id" => $id,
+                "error" => $th->getMessage(),
+                "file" => $th->getFile(),
+                "line" => $th->getLine(),
+            ]);
+
             return response()->json([
-                "message"=>$th->getMessage(),
-            ],500);
+                "status" => "error",
+                "message" => $th->getMessage(),
+            ], 500);
         }
     }
 }

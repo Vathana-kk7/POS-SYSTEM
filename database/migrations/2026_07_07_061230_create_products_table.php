@@ -23,8 +23,9 @@ return new class extends Migration
             $table->integer("min_stock_level")->default(0);
             $table->string("status");
             $table->decimal("selling_price",10,2);
-            $table->foreignId("brand_id")->constrained("brands")->restrictOnDelete();
-            $table->foreignId("category_id")->constrained("categories")->restrictOnDelete();
+            // កែសម្រួល៖ បន្ថែម ->nullable() មុន nullOnDelete()
+            $table->foreignId("brand_id")->nullable()->constrained("brands")->nullOnDelete();
+            $table->foreignId("category_id")->nullable()->constrained("categories")->nullOnDelete();
             $table->timestamps();
         });
     }

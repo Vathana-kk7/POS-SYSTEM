@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\Role; // 🔑 Import Role Model ឱ្យច្បាស់លាស់
 
 class User extends Authenticatable
 {
@@ -22,7 +23,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role_id',
-        'google_id'
+        'google_id',
     ];
 
     /**
@@ -45,8 +46,11 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    //Relationship with Role model
-    public function role(){
+    /**
+     * Relationship with Role model
+     */
+    public function role()
+    {
         return $this->belongsTo(Role::class);
     }
 }
