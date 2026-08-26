@@ -40,27 +40,6 @@ class BrandRepository implements BrandRepositoryInterface{
         $brand->update($data);
         return $brand;
     }
-    // public function delete($id){
-    //     $brand= Brand::findOrFail($id);
-    //     $brand->delete($id);
-    //     return $brand;
-    // }
-    // public function delete(string $id)
-    // {
-    //     $brand = Brand::findOrFail($id);
-    //     $brand->delete();
-    //     return $brand;
-    // }
-    // public function getBrandStats()
-    // {
-    //     return [
-    //         'total' => Brand::count(),
-    //         'active' => Brand::where('status', 'active')->count(),
-    //         'inactive' => Brand::where('status', 'inactive')->count(),
-    //         'with_products' => Brand::has('products')->count(),
-    //     ];
-    // }
-
     public function getBrandStats()
     {
         $total = Brand::count();
@@ -111,4 +90,32 @@ class BrandRepository implements BrandRepositoryInterface{
     {
         return Brand::query()->latest()->paginate($perPage);
     }
+    public function insertBulk(array $data): bool
+    {
+        return Brand::insert($data);
+    }
+
+   public function getForExport(array $filters = [])
+{
+    $query = Brand::query();
+
+    if (!empty($filters['search'])) {
+        $query->where(
+            'name',
+            'like',
+            '%' . $filters['search'] . '%'
+        );
+    }
+
+    if (!empty($filters['status'])) {
+        $query->where(
+            'status',
+            $filters['status']
+        );
+    }
+
+    return $query
+        ->orderBy('name')
+        ->get();
+}
 }

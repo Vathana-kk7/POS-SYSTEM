@@ -10,5 +10,6 @@ interface BrandRepositoryInterface{
     // public function delete(string $id);
     public function delete(string $id): bool;
     public function paginate(int $perPage = 10);
-
+    public function insertBulk(array $data): bool;
+    public function getForExport(array $filters = []);
 }
