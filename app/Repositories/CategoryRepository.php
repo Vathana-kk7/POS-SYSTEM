@@ -29,6 +29,45 @@ class CategoryRepository implements CategoryRepositoryInterface{
         }
         return $query->paginate($perPage);
     }
+    public function getCategorystate()
+    {
+        $total = Category::count();
+
+        $thisMonth = Category::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+
+        $lastMonth = Category::whereMonth(
+                'created_at',
+                now()->subMonth()->month
+            )
+            ->whereYear(
+                'created_at',
+                now()->subMonth()->year
+            )
+            ->count();
+
+        \Log::info('Category Growth Debug', [
+            'thisMonth' => $thisMonth,
+            'lastMonth' => $lastMonth,
+        ]);
+
+        if ($lastMonth === 0 && $thisMonth > 0) {
+            $growth = null;
+        } elseif ($lastMonth === 0) {
+            $growth = 0;
+        } else {
+            $growth = (($thisMonth - $lastMonth) / $lastMonth) * 100;
+        }
+
+        return [
+            'total' => $total,
+            'active' => Category::where('status', 'active')->count(),
+            'inactive' => Category::where('status', 'inactive')->count(),
+            'with_products' => Category::has('products')->count(),
+            'growth' => $growth !== null ? round($growth, 2) : null,
+        ];
+    }
     public function findByid(string $id){
         return Category::findOrFail($id);
     }
@@ -41,5 +80,10 @@ class CategoryRepository implements CategoryRepositoryInterface{
         $category=Category::findOrFail($id);
         $category->update($data);
         return $category;
+    }
+
+    public function insertBulk(array $data): bool
+    {
+        return Category::insert($data);
     }
 }

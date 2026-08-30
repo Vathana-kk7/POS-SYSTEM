@@ -1,10 +1,13 @@
 <?php
 namespace App\DTO\Category;
-class CrateCategoryDTO{
-    public function __construct(
-        public string $name,
-        public string $description,
-        public string $status,
 
-    ){}
+class CrateCategoryDTO extends CreateCategoryDTO
+{
+    public function __construct(
+        string $name,
+        string $description,
+        string $status,
+    ) {
+        parent::__construct($name, $description, $status);
+    }
 }

@@ -184,25 +184,37 @@ public function exportBrandsPdf(array $filters = [])
     /**
      * Helper Function សម្រាប់លុប Cache បញ្ជី Brands ទាំងអស់ និង Stats
      */
+    // private function clearBrandCache(): void
+    // {
+    //     Cache::forget('brands_stats');
+
+    //     // លុប Key ទាំងអស់ដែលផ្តើមដោយ brands_all_
+    //     if (config('cache.default') === 'redis') {
+    //         try {
+    //             $redis = Cache::redis();
+    //             $prefix = config('database.redis.options.prefix', '');
+    //             $keys = $redis->keys($prefix . 'brands_all_*');
+
+    //             foreach ($keys as $key) {
+    //                 $cleanKey = str_replace($prefix, '', $key);
+    //                 Cache::forget($cleanKey);
+    //             }
+    //         } catch (\Throwable $e) {
+    //             // ករណីមានបញ្ហាជាមួយ Redis keys scan
+    //             Cache::flush();
+    //         }
+    //     }
+    // }
     private function clearBrandCache(): void
-    {
-        Cache::forget('brands_stats');
+{
+    // 1. លុប Stats Cache
+    Cache::forget('brands_stats');
 
-        // លុប Key ទាំងអស់ដែលផ្តើមដោយ brands_all_
-        if (config('cache.default') === 'redis') {
-            try {
-                $redis = Cache::redis();
-                $prefix = config('database.redis.options.prefix', '');
-                $keys = $redis->keys($prefix . 'brands_all_*');
-
-                foreach ($keys as $key) {
-                    $cleanKey = str_replace($prefix, '', $key);
-                    Cache::forget($cleanKey);
-                }
-            } catch (\Throwable $e) {
-                // ករណីមានបញ្ហាជាមួយ Redis keys scan
-                Cache::flush();
-            }
-        }
+    // 2. ដំឡើង Version របស់ Brand Cache (ធ្វើឱ្យ Cache Key ចាស់ៗទាំងអស់ត្រូវផុតកំណត់ភ្លាមៗ)
+    if (Cache::has('brands_cache_version')) {
+        Cache::increment('brands_cache_version');
+    } else {
+        Cache::put('brands_cache_version', 2);
     }
+}
 }

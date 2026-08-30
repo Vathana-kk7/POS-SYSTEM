@@ -6,4 +6,6 @@ interface CategoryRepositoryInterface{
     public function all($perPage,array $fillter=[]);
     public function findById(string $id);
     public function delete(string $id);
+    public function getCategorystate();
+    public function insertBulk(array $data): bool;
 }

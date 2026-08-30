@@ -46,6 +46,9 @@ Route::middleware('web')->group(function () {
             Route::post('/brand/import', [BrandController::class, 'import']);
             Route::apiResource('users', UserController::class);
             Route::apiResource('brand', BrandController::class);
+
+            Route::get('/category/state', [CategoryController::class, 'state']);
+            Route::post('/category/import', [CategoryController::class, 'import']);
             Route::apiResource('category', CategoryController::class);
             Route::apiResource('bank', BankController::class);
             Route::apiResource('orderPaymentMethod', OrderPaymentMethodController::class);
