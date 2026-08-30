@@ -3,7 +3,7 @@ namespace App\Repositories\Interfaces;
 interface CategoryRepositoryInterface{
     public function create(array $data);
     public function update(string $id,array $data);
-    public function all();
+    public function all($perPage,array $fillter=[]);
     public function findById(string $id);
     public function delete(string $id);
 }

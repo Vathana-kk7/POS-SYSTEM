@@ -30,6 +30,10 @@ class UpdateCategoryRequest extends FormRequest
             "description"=>[
                 "required",
                 "string"
+            ],
+            "status"=>[
+                "required",
+                "string",
             ]
         ];
     }

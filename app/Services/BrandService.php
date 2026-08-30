@@ -31,17 +31,41 @@ class BrandService {
         return $result;
     }
 
-    public function getAllBrand($perPage, array $filters = [])
-    {
-        // បង្កើត Cache Key ផ្អែកលើ perPage និង Filters
-        $cacheKey = 'brands_all_page_' . $perPage . '_' . md5(json_encode($filters));
+    // public function getAllBrand($perPage, array $filters = [])
+    // {
+    //     // បង្កើត Cache Key ផ្អែកលើ perPage និង Filters
+    //     $cacheKey = 'brands_all_page_' . $perPage . '_' . md5(json_encode($filters));
 
-        // រក្សាទុកក្នុង Redis រយៈពេល 1 ថ្ងៃ (86400s)
-        return Cache::remember($cacheKey, 86400, function () use ($perPage, $filters) {
-            return $this->repo->all($perPage, $filters);
-        });
-    }
+    //     // រក្សាទុកក្នុង Redis រយៈពេល 1 ថ្ងៃ (86400s)
+    //     return Cache::remember($cacheKey, 86400, function () use ($perPage, $filters) {
+    //         return $this->repo->all($perPage, $filters);
+    //     });
+    // }
+public function getAllBrand($perPage, array $filters = [])
+{
+    $page = request()->integer('page', 1);
 
+    $version = Cache::get('brands_cache_version', 1);
+
+    $cacheKey = 'brands:v' . $version . ':' . md5(
+        json_encode([
+            'page' => $page,
+            'perPage' => $perPage,
+            'filters' => $filters,
+        ])
+    );
+
+    return Cache::remember(
+        $cacheKey,
+        300, // 5 minutes
+        function () use ($perPage, $filters) {
+            return $this->repo->all(
+                $perPage,
+                $filters
+            );
+        }
+    );
+}
     public function getBrandStats()
     {
         // Cache Stats រយៈពេល 1 ថ្ងៃ
@@ -113,26 +137,50 @@ class BrandService {
         return $saved;
     }
 
-    public function exportBrands(string $type, array $filters = [])
-    {
-        if ($type === 'excel') {
-            return Excel::download(
-                new BrandsExport($filters),
-                'brands.xlsx'
-            );
-        }
+    public function exportBrandsExcel(array $filters = [])
+{
+    return Excel::download(
+        new BrandsExport($filters),
+        'brands_' . now()->format('Y-m-d') . '.xlsx'
+    );
+}
+public function exportBrandsPdf(array $filters = [])
+{
+    $pdf = new \Mpdf\Mpdf([
+        'format' => 'A4',
+        'orientation' => 'P',
+        'tempDir' => storage_path('app/mpdf'),
+    ]);
 
-        if ($type === 'pdf') {
-            return Excel::download(
-                new BrandsExport($filters),
-                'brands.pdf',
-                ExcelFormat::MPDF
-            );
-        }
+    $query = $this->repo->getForExport($filters);
 
-        abort(400, 'Invalid export type');
-    }
+    $query->chunk(500, function ($brands) use ($pdf) {
 
+        $html = view('exports.brands-pdf', [
+            'brands' => $brands,
+        ])->render();
+
+        $pdf->WriteHTML($html);
+
+        unset($html);
+        unset($brands);
+    });
+
+    return response(
+        $pdf->Output(
+            'brands_' . now()->format('Y-m-d') . '.pdf',
+            'S'
+        ),
+        200,
+        [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' =>
+                'attachment; filename="brands_' .
+                now()->format('Y-m-d') .
+                '.pdf"',
+        ]
+    );
+}
     /**
      * Helper Function សម្រាប់លុប Cache បញ្ជី Brands ទាំងអស់ និង Stats
      */

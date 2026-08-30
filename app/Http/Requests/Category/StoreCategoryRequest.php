@@ -31,6 +31,10 @@ class StoreCategoryRequest extends FormRequest
                 "required",
                 "string",
             ],
+            "status"=>[
+                "required",
+                "string",
+            ]
         ];
     }
 }

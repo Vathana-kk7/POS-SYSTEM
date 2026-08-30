@@ -8,15 +8,22 @@ use App\DTO\Category\UpdateCategoryDTO;
 use App\Http\Requests\Category\StoreCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
 use App\Services\CategoryService;
+use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
     public function __construct(
         private CategoryService $CategoryService
     ){}
-    public function index(){
+    public function index(Request $request){
         try {
-            $result=$this->CategoryService->getCategory();
+            $perPage=$request->integer('per_page',10);
+            $filter=array_filter([
+                'search' => $request->input('search'),
+                'status' => $request->input('status'),
+            ],fn($value)=>!is_null($value) && $value !=="");
+
+            $result=$this->CategoryService->getCategory($perPage,$filter);
             return response()->json([
                 "status"=>"success",
                 "data"=>$result,
@@ -34,6 +41,7 @@ class CategoryController extends Controller
                 new CrateCategoryDTO(
                     $request->name,
                     $request->description,
+                    $request->status,
                 )
             );
             return response()->json([
@@ -80,6 +88,8 @@ class CategoryController extends Controller
             new UpdateCategoryDTO(
                 $request->name,
                 $request->description,
+                $request->status,
+
             )
         );
 

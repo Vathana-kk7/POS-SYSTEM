@@ -40,7 +40,8 @@ Route::middleware('web')->group(function () {
 
         // Admin Only
         Route::middleware('role:Admin')->group(function () {
-            Route::get('/brand/export/{type}', [BrandController::class, 'export']);
+            Route::get('/brand/export/excel', [BrandController::class, 'exportExcel']);
+            Route::get('/brand/export/pdf', [BrandController::class, 'exportPdf']);
             Route::get('/brand/stats', [BrandController::class, 'stats']);
             Route::post('/brand/import', [BrandController::class, 'import']);
             Route::apiResource('users', UserController::class);

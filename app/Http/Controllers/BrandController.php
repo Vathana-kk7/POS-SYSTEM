@@ -17,6 +17,7 @@ class BrandController extends Controller
 {
     public function __construct(private BrandService $BrandService) {}
 
+
     /**
      * Display a listing of the resource.
      */
@@ -24,10 +25,13 @@ class BrandController extends Controller
     {
         try {
             $perPage = $request->integer('per_page', 10);
-            $filter = [
+
+            // 🔍 Clean Filter: យកតែ key ណាដែលមាន value ពិតប្រាកដ (មិនមែន null ឬ "")
+            $filter = array_filter([
                 'search' => $request->input('search'),
                 'status' => $request->input('status'),
-            ];
+            ], fn($value) => !is_null($value) && $value !== '');
+
             $brand = $this->BrandService->getAllBrand($perPage, $filter);
 
             return response()->json([
@@ -40,7 +44,6 @@ class BrandController extends Controller
             ], 500);
         }
     }
-
     /**
      * Store a newly created resource in storage.
      */
@@ -181,13 +184,57 @@ class BrandController extends Controller
     }
 
 
-    public function export(
-    ExportBrandRequest $request,
-    string $type
-) {
-    return $this->BrandService->exportBrands(
-        $type,
-        $request->validated()
-    );
+    // public function export(
+    // ExportBrandRequest $request,
+    // string $type
+    // ) {
+    //     return $this->BrandService->exportBrandsExcel(
+    //         $type,
+    //         $request->validated()
+    //     );
+    // }
+   public function exportExcel(ExportBrandRequest $request)
+{
+    try {
+
+        return $this->BrandService->exportBrandsExcel(
+            $request->validated()
+        );
+
+    } catch (\Throwable $th) {
+
+        \Log::error('Excel Export Failed', [
+            'message' => $th->getMessage(),
+            'file' => $th->getFile(),
+            'line' => $th->getLine(),
+        ]);
+
+        return response()->json([
+            'status' => 'error',
+            'message' => $th->getMessage(),
+        ], 500);
+    }
+}
+    public function exportPdf(ExportBrandRequest $request)
+{
+    try {
+
+        return $this->BrandService->exportBrandsPdf(
+            $request->validated()
+        );
+
+    } catch (\Throwable $th) {
+
+        \Log::error('PDF Export Failed', [
+            'message' => $th->getMessage(),
+            'file' => $th->getFile(),
+            'line' => $th->getLine(),
+        ]);
+
+        return response()->json([
+            'status' => 'error',
+            'message' => $th->getMessage(),
+        ], 500);
+    }
 }
 }

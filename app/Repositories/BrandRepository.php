@@ -4,26 +4,28 @@ namespace App\Repositories;
 use App\Models\Brand;
 use App\Repositories\Interfaces\BrandRepositoryInterface;
 
-class BrandRepository implements BrandRepositoryInterface{
-    public function create(array $data):Brand
+class BrandRepository implements BrandRepositoryInterface {
+
+    public function create(array $data): Brand
     {
         return Brand::create($data);
     }
-    // public function all(){
-    //     return Brand::all();
-    // }
+
     public function all($perPage, array $filters = [])
     {
-        $query = Brand::query();
+        $query = Brand::query()->latest();
+
+        // 1. ត្រួតពិនិត្យ Search Query
         if (!empty($filters['search'])) {
             $query->where(
                 'name',
                 'like',
-                '%' . $filters['search'] . '%'
+                '%' . trim($filters['search']) . '%'
             );
         }
 
-        if (!empty($filters['status'])) {
+        // 2. ត្រួតពិនិត្យ Status Query (រំលង ប្រសិនបើជា 'all' ឬ Empty String)
+        if (!empty($filters['status']) && $filters['status'] !== 'all') {
             $query->where(
                 'status',
                 $filters['status']
@@ -32,14 +34,17 @@ class BrandRepository implements BrandRepositoryInterface{
 
         return $query->paginate($perPage);
     }
+
     public function findById(string $id){
         return Brand::findOrFail($id);
     }
-    public function update(string $id,array $data){
-        $brand=Brand::findOrFail($id);
+
+    public function update(string $id, array $data){
+        $brand = Brand::findOrFail($id);
         $brand->update($data);
         return $brand;
     }
+
     public function getBrandStats()
     {
         $total = Brand::count();
@@ -79,10 +84,10 @@ class BrandRepository implements BrandRepositoryInterface{
             'growth' => $growth !== null ? round($growth, 2) : null,
         ];
     }
+
     public function delete(string $id): bool
     {
         $brand = Brand::findOrFail($id);
-
         return $brand->delete();
     }
 
@@ -90,12 +95,13 @@ class BrandRepository implements BrandRepositoryInterface{
     {
         return Brand::query()->latest()->paginate($perPage);
     }
+
     public function insertBulk(array $data): bool
     {
         return Brand::insert($data);
     }
 
-   public function getForExport(array $filters = [])
+    public function getForExport(array $filters = [])
 {
     $query = Brand::query();
 
@@ -103,19 +109,20 @@ class BrandRepository implements BrandRepositoryInterface{
         $query->where(
             'name',
             'like',
-            '%' . $filters['search'] . '%'
+            '%' . trim($filters['search']) . '%'
         );
     }
 
-    if (!empty($filters['status'])) {
+    if (
+        !empty($filters['status']) &&
+        $filters['status'] !== 'all'
+    ) {
         $query->where(
             'status',
             $filters['status']
         );
     }
 
-    return $query
-        ->orderBy('name')
-        ->get();
+    return $query->orderBy('name');
 }
 }
