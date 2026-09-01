@@ -147,12 +147,19 @@ class CategoryService{
 }
 
     private function clearCategoryCache(): void
-    {
-        try {
-            Cache::increment('categories_cache_version');
-            Cache::forget('category');
-        } catch (\Throwable $th) {
-            // Ignore cache driver issues, database calls still work.
-        }
+{
+    try {
+        $version = Cache::get('categories_cache_version', 1);
+
+        Cache::put(
+            'categories_cache_version',
+            $version + 1
+        );
+
+        Cache::forget('category');
+
+    } catch (\Throwable $th) {
+        // Ignore cache errors
     }
+}
 }

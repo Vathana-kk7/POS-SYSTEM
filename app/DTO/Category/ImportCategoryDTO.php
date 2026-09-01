@@ -5,20 +5,17 @@ namespace App\DTO\Category;
 class ImportCategoryDTO
 {
     public function __construct(
-        public string $name,
-        public ?string $description,
-        public mixed $status,
+        public readonly string $name,
+        public readonly ?string $description = null,
+        public readonly string $status = 'active',
     ) {}
 
     public static function fromExcelRow(array $row): self
     {
-        // បម្លែង "Active" -> 1 / "Inactive" -> 0
-        $status = isset($row['status']) && strtolower(trim($row['status'])) === 'active' ? 1 : 0;
-
         return new self(
             name: trim($row['name'] ?? ''),
             description: isset($row['description']) ? trim($row['description']) : null,
-            status: $status,
+            status: !empty($row['status']) ? strtolower(trim($row['status'])) : 'active'
         );
     }
 
