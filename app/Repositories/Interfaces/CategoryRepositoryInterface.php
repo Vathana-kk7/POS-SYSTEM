@@ -8,4 +8,5 @@ interface CategoryRepositoryInterface{
     public function delete(string $id);
     public function getCategorystate();
     public function insertBulk(array $data): bool;
+    public function getForExport(array $filters=[]);
 }

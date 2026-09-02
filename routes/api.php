@@ -46,7 +46,9 @@ Route::middleware('web')->group(function () {
             Route::post('/brand/import', [BrandController::class, 'import']);
             Route::apiResource('users', UserController::class);
             Route::apiResource('brand', BrandController::class);
-
+            // exportExcel
+            Route::get('/category/export/pdf', [CategoryController::class, 'exportPdf']);
+            Route::get('/category/export/excel', [CategoryController::class, 'exportExcel']);
             Route::get('/category/state', [CategoryController::class, 'state']);
             Route::post('/category/import', [CategoryController::class, 'import']);
             Route::apiResource('category', CategoryController::class);

@@ -8,102 +8,30 @@ use App\Http\Requests\Brand\ExportBrandRequest;
 use App\Http\Requests\Brand\ImportBrandRequest;
 use App\Http\Requests\Brand\StoreBrandRequest;
 use App\Http\Requests\Brand\UpdateBrandRequest;
-use App\Models\Brand;
 use App\Services\BrandService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class BrandController extends Controller
 {
-    public function __construct(private BrandService $BrandService) {}
+    public function __construct(
+        private BrandService $brandService
+    ) {}
 
-
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         try {
             $perPage = $request->integer('per_page', 10);
-
-            // 🔍 Clean Filter: យកតែ key ណាដែលមាន value ពិតប្រាកដ (មិនមែន null ឬ "")
             $filter = array_filter([
                 'search' => $request->input('search'),
                 'status' => $request->input('status'),
-            ], fn($value) => !is_null($value) && $value !== '');
+            ], fn($value) => !is_null($value) && $value !== "");
 
-            $brand = $this->BrandService->getAllBrand($perPage, $filter);
+            $result = $this->brandService->getAllBrand($perPage, $filter);
 
-            return response()->json([
-                "status" => "success",
-                "data" => $brand
-            ]);
-        } catch (\Throwable $th) {
-            return response()->json([
-                "message" => $th->getMessage(),
-            ], 500);
-        }
-    }
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreBrandRequest $request)
-    {
-        try {
-            $result = $this->BrandService->CreateBrand(
-                new CreateBrandDTO(
-                    $request->name,
-                    $request->status,
-                )
-            );
-            return response()->json([
-                "status" => "success",
-                "message" => "Create Successfully",
-                "data" => $result
-            ], 201);
-        } catch (\Throwable $th) {
-            return response()->json([
-                "status" => "error",
-                "message" => $th->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        try {
-            $result = $this->BrandService->getbrandById($id);
             return response()->json([
                 "status" => "success",
                 "data" => $result,
-            ], 200);
-        } catch (\Throwable $th) {
-            return response()->json([
-                "message" => $th->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateBrandRequest $request, string $id)
-    {
-        try {
-            $result = $this->BrandService->update(
-                $id,
-                new UpdateBrandDTO(
-                    $request->name,
-                    $request->status,
-                )
-            );
-            return response()->json([
-                "status" => "Success",
-                "message" => "Update Successfully",
-                "data" => $result
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -115,7 +43,7 @@ class BrandController extends Controller
     public function stats()
     {
         try {
-            $stats = $this->BrandService->getBrandStats();
+            $stats = $this->brandService->getBrandStats();
 
             return response()->json([
                 "status" => "success",
@@ -129,45 +57,93 @@ class BrandController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function store(StoreBrandRequest $request)
     {
         try {
-            $this->BrandService->delete($id);
+            $result = $this->brandService->CreateBrand(
+                new CreateBrandDTO(
+                    $request->name,
+                    $request->status,
+                )
+            );
 
             return response()->json([
                 "status" => "success",
-                "message" => "Brand deleted successfully",
-            ], 200);
+                "message" => "Create Successfully",
+                "data" => $result
+            ], 201);
         } catch (\Throwable $th) {
-            \Log::error("Delete Brand Failed", [
-                "brand_id" => $id,
-                "error" => $th->getMessage(),
-                "file" => $th->getFile(),
-                "line" => $th->getLine(),
-            ]);
-
             return response()->json([
-                "status" => "error",
                 "message" => $th->getMessage(),
             ], 500);
         }
     }
 
-    /**
-     * Import brands from Excel file.
-     */
+    public function show(string $id)
+    {
+        try {
+            $result = $this->brandService->getbrandById($id);
+
+            return response()->json([
+                "status" => "success",
+                "data" => $result,
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message" => $th->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function update(UpdateBrandRequest $request, string $id)
+    {
+        try {
+            $result = $this->brandService->update(
+                $id,
+                new UpdateBrandDTO(
+                    $request->name,
+                    $request->status,
+                )
+            );
+
+            return response()->json([
+                "status" => "success",
+                "message" => "Update Successfully",
+                "data" => $result,
+            ], 200);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message" => $th->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function destroy(string $id)
+    {
+        try {
+            $this->brandService->delete($id);
+
+            return response()->json([
+                "status" => "success",
+                "message" => "Brand was deleted",
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message" => $th->getMessage(),
+            ], 500);
+        }
+    }
+
     public function import(ImportBrandRequest $request): JsonResponse
     {
         try {
-            $status = $this->BrandService->importBrands($request->file('file'));
+            $status = $this->brandService->importBrands($request->file('file'));
 
             if (!$status) {
                 return response()->json([
-                    'status' => 'error',
-                    'message' => 'គ្មានទិន្នន័យត្រូវបានបញ្ចូលទេ ឬ File ទទេ!'
+                    "status" => "error",
+                    "message" => "គ្មានទិន្នន័យត្រូវបានបញ្ចូលទេ ឬ File ទទេ!",
                 ], 400);
             }
 
@@ -183,58 +159,41 @@ class BrandController extends Controller
         }
     }
 
+    public function exportExcel(ExportBrandRequest $request)
+    {
+        try {
+            return $this->brandService->exportBrandsExcel($request->validated());
+        } catch (\Throwable $th) {
+            \Log::error('Excel Export Failed', [
+                'message' => $th->getMessage(),
+                'file' => $th->getFile(),
+                'line' => $th->getLine(),
+            ]);
 
-    // public function export(
-    // ExportBrandRequest $request,
-    // string $type
-    // ) {
-    //     return $this->BrandService->exportBrandsExcel(
-    //         $type,
-    //         $request->validated()
-    //     );
-    // }
-   public function exportExcel(ExportBrandRequest $request)
-{
-    try {
-
-        return $this->BrandService->exportBrandsExcel(
-            $request->validated()
-        );
-
-    } catch (\Throwable $th) {
-
-        \Log::error('Excel Export Failed', [
-            'message' => $th->getMessage(),
-            'file' => $th->getFile(),
-            'line' => $th->getLine(),
-        ]);
-
-        return response()->json([
-            'status' => 'error',
-            'message' => $th->getMessage(),
-        ], 500);
+            return response()->json([
+                'status' => 'error',
+                'message' => $th->getMessage(),
+            ], 500);
+        }
     }
-}
+
     public function exportPdf(ExportBrandRequest $request)
-{
-    try {
+    {
+        try {
+            return $this->brandService->exportBrandsPdf(
+                $request->validated()
+            );
+        } catch (\Throwable $th) {
+            \Log::error('PDF Export Failed', [
+                'message' => $th->getMessage(),
+                'file' => $th->getFile(),
+                'line' => $th->getLine(),
+            ]);
 
-        return $this->BrandService->exportBrandsPdf(
-            $request->validated()
-        );
-
-    } catch (\Throwable $th) {
-
-        \Log::error('PDF Export Failed', [
-            'message' => $th->getMessage(),
-            'file' => $th->getFile(),
-            'line' => $th->getLine(),
-        ]);
-
-        return response()->json([
-            'status' => 'error',
-            'message' => $th->getMessage(),
-        ], 500);
+            return response()->json([
+                'status' => 'error',
+                'message' => $th->getMessage(),
+            ], 500);
+        }
     }
-}
 }

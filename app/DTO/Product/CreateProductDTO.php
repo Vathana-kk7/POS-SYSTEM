@@ -15,6 +15,6 @@ class CreateProductDTO{
         public float $selling_price,
         public int $brand_id,
         public int $category_id,
-        public array $supplier_ids,
+        // public array $supplier_ids,
     ){}
 }

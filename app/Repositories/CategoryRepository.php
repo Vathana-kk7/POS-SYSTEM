@@ -1,35 +1,40 @@
 <?php
+
 namespace App\Repositories;
 
 use App\Models\Category;
 use App\Repositories\Interfaces\CategoryRepositoryInterface;
-use Override;
 
-class CategoryRepository implements CategoryRepositoryInterface{
-
+class CategoryRepository implements CategoryRepositoryInterface
+{
     public function create(array $data)
     {
         return Category::create($data);
     }
-    public function all($perPage,array $filters=[]){
-        $query= Category::query()->latest();
-        //1ត្រួតពិនិត្យSearch Filter
-        if(!empty($filters['search'])){
+
+    public function all($perPage, array $filters = [])
+    {
+        $query = Category::query()->latest();
+
+        if (!empty($filters['search'])) {
             $query->where(
                 'name',
                 'like',
-                '%'.trim($filters['search']).'%'
+                '%' . trim($filters['search']) . '%'
             );
         }
-        if(!empty($filters['status']) && $filters['status']!=="all"){
-           $query->where(
+
+        if (!empty($filters['status']) && $filters['status'] !== "all") {
+            $query->where(
                 'status',
-                $filters['status'],
+                $filters['status']
             );
         }
+
         return $query->paginate($perPage);
     }
-    public function getCategorystate()
+
+    public function getCategoryState()
     {
         $total = Category::count();
 
@@ -37,14 +42,8 @@ class CategoryRepository implements CategoryRepositoryInterface{
             ->whereYear('created_at', now()->year)
             ->count();
 
-        $lastMonth = Category::whereMonth(
-                'created_at',
-                now()->subMonth()->month
-            )
-            ->whereYear(
-                'created_at',
-                now()->subMonth()->year
-            )
+        $lastMonth = Category::whereMonth('created_at', now()->subMonth()->month)
+            ->whereYear('created_at', now()->subMonth()->year)
             ->count();
 
         \Log::info('Category Growth Debug', [
@@ -68,16 +67,22 @@ class CategoryRepository implements CategoryRepositoryInterface{
             'growth' => $growth !== null ? round($growth, 2) : null,
         ];
     }
-    public function findByid(string $id){
+
+    public function findById(string $id)
+    {
         return Category::findOrFail($id);
     }
-    public function delete($id){
-        $category= Category::findOrFail($id);
+
+    public function delete($id)
+    {
+        $category = Category::findOrFail($id);
         $category->delete();
         return $category;
     }
-    public function update(string $id,array $data){
-        $category=Category::findOrFail($id);
+
+    public function update(string $id, array $data)
+    {
+        $category = Category::findOrFail($id);
         $category->update($data);
         return $category;
     }
@@ -85,5 +90,20 @@ class CategoryRepository implements CategoryRepositoryInterface{
     public function insertBulk(array $data): bool
     {
         return Category::insert($data);
+    }
+
+    public function getForExport(array $filters = [])
+    {
+        $query = Category::query();
+
+        if (!empty($filters['search'])) {
+            $query->where('name', 'like', '%' . trim($filters['search']) . '%');
+        }
+
+        if (!empty($filters['status']) && $filters['status'] !== 'all') {
+            $query->where('status', $filters['status']);
+        }
+
+        return $query->orderBy('name')->get();
     }
 }
