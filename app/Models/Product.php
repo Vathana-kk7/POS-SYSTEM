@@ -18,9 +18,11 @@ class Product extends Model
         "image",
         "min_stock_level",
         "status",
+        "product_type",
         "selling_price",
         "brand_id",
         "category_id",
+        "barcode",
     ];
       //Relationships
       public function category(){

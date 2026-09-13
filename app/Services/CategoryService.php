@@ -60,13 +60,11 @@ class CategoryService
 
     public function getCategoryState()
     {
-        try {
-            return Cache::remember('category', 86400, function () {
+
+            return Cache::remember('categories_stats', 86400, function () {
                 return $this->repo->getCategorystate();
             });
-        } catch (\Throwable $th) {
-            return $this->repo->getCategorystate();
-        }
+
     }
 
     public function getCategoryById($id)
@@ -108,15 +106,11 @@ class CategoryService
             return false;
         }
 
-        $categoryData = $rows
-            ->filter(fn ($row) => !empty($row['name']))
-            ->map(
-                fn ($row) => ImportCategoryDTO::fromExcelRow(
-                    $row->toArray()
-                )->toArray()
-            )
-            ->values()
-            ->toArray();
+        $categoryData = $rows->filter(fn ($row) => !empty($row['name']))->map(
+            fn ($row) => ImportCategoryDTO::fromExcelRow(
+                $row->toArray()
+            )->toArray()
+        )->values()->toArray();
 
         if (empty($categoryData)) {
             return false;
@@ -256,17 +250,24 @@ class CategoryService
 
     private function clearCategoryCache(): void
     {
-        try {
-            $version = Cache::get('categories_cache_version', 1);
+        Cache::forget('categories_stats');
 
-            Cache::put(
-                'categories_cache_version',
-                $version + 1
-            );
-
-            Cache::forget('category');
-        } catch (\Throwable $th) {
-            // Ignore cache errors
+        if (Cache::has('categories_cache_version')) {
+            Cache::increment('categories_cache_version');
+        } else {
+            Cache::put('categories_cache_version', 2);
         }
+        // try {
+        //     $version = Cache::get('categories_cache_version', 1);
+
+        //     Cache::put(
+        //         'categories_cache_version',
+        //         $version + 1
+        //     );
+
+        //     Cache::forget('categories_stats');
+        // } catch (\Throwable $th) {
+        //     // Ignore cache errors
+        // }
     }
 }

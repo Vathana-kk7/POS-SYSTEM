@@ -19,9 +19,11 @@ return new class extends Migration
             $table->decimal("cost_price",10,2);
             $table->text("description");
             $table->string("sku")->unique();
+            $table->string("barcode")->unique()->nullable();
             $table->text("image")->nullable();
             $table->integer("min_stock_level")->default(0);
             $table->string("status");
+            $table->string("product_type");
             $table->decimal("selling_price",10,2);
             // កែសម្រួល៖ បន្ថែម ->nullable() មុន nullOnDelete()
             $table->foreignId("brand_id")->nullable()->constrained("brands")->nullOnDelete();

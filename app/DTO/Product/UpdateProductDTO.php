@@ -10,9 +10,10 @@ class UpdateProductDTO{
         public ?string $image,
         public int $min_stock_level,
         public string $status,
+        public string $product_type,
         public float $selling_price,
         public int $brand_id,
         public int $category_id,
-        public array $supplier_ids,
+        // public array $supplier_ids,
     ){}
 }

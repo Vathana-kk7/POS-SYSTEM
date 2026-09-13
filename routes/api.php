@@ -59,6 +59,7 @@ Route::middleware('web')->group(function () {
 
         // Admin + Manager
         Route::middleware('role:Admin,Manager')->group(function () {
+            Route::post("/product/import",[ProductController::class,"import"]);
             Route::apiResource('product', ProductController::class);
             Route::apiResource('supplier', SupplierController::class);
             Route::apiResource('purchase', PurchaseController::class);

@@ -133,7 +133,9 @@ class CategoryController extends Controller
     public function import(ImportCategoryRequest $request): JsonResponse
     {
         try {
-            $status = $this->CategoryService->importCategory($request->file('file'));
+            $status = $this->CategoryService->importCategory(
+                $request->file('file')
+            );
             if (!$status) {
                 return response()->json([
                     "status" => "error",

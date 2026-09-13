@@ -1,6 +1,7 @@
 <?php
 namespace App\DTO\Product;
 
+use Illuminate\Http\UploadedFile;
 
 class CreateProductDTO{
     public function __construct(
@@ -9,12 +10,12 @@ class CreateProductDTO{
         public float $cost_price,
         public string $description,
         public string $sku,
-        public ?string $image,
+        public UploadedFile|string|null $image, // បន្ថែម UploadedFile type
         public int $min_stock_level,
         public string $status,
+        public string $product_type,
         public float $selling_price,
         public int $brand_id,
         public int $category_id,
-        // public array $supplier_ids,
     ){}
 }

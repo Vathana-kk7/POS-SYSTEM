@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\DTO\Product\CreateProductDTO;
 use App\DTO\Product\UpdateProductDTO;
+use App\Http\Requests\Product\ImportProductRequest;
 use App\Http\Requests\Product\StoreProductRequest;
 use App\Http\Requests\Product\UpdateProdctRequest;
 use App\Services\ProductService;
+use Illuminate\Http\JsonResponse;
 
 class ProductController extends Controller
 {
@@ -35,13 +37,14 @@ class ProductController extends Controller
                     $request->cost_price,
                     $request->description,
                     $request->sku,
-                    $request->image,
+                    $request->file('image'), // ទាញយក File object
                     $request->min_stock_level,
                     $request->status,
+                    $request->product_type,
                     $request->selling_price,
                     $request->brand_id,
                     $request->category_id,
-                    $request->supplier_ids,
+                    // $request->supplier_ids,
                 )
             );
             return response()->json([
@@ -67,10 +70,10 @@ class ProductController extends Controller
                     $request->image,
                     $request->min_stock_level,
                     $request->status,
+                    $request->product_type,
                     $request->selling_price,
                     $request->brand_id,
                     $request->category_id,
-                    $request->supplier_ids,
                 )
             );
             return response()->json([
@@ -105,6 +108,27 @@ class ProductController extends Controller
         } catch (\Throwable $th) {
             return response()->json([
                 "message"=>$th->getMessage()
+            ],500);
+        }
+    }
+    public function import(ImportProductRequest $request): JsonResponse
+    {
+        try {
+            $status = $this->ProductService->importProduct($request->file('file'));
+            if(!$status){
+                return response()->json([
+                    "status"=>"error",
+                    "message"=>"Nothing data input or File Emty",
+                ],400);
+            }
+            return response()->json([
+                "status"=>"success",
+                "message"=>"Input Data from product to excel successfully",
+            ],200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "status"=>"error",
+                "message"=>'មានបញ្ហាក្នុងការ Import: ' . $th->getMessage(),
             ],500);
         }
     }

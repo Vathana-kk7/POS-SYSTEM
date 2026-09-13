@@ -34,6 +34,7 @@ class UpdateProdctRequest extends FormRequest
         "image" => "nullable|string",
         "min_stock_level" => "required|integer",
         "status" => "required|string",
+        "product_type" => "required|string",
         "selling_price" => "required|numeric",
         "brand_id" => "required|integer|exists:brands,id",
         "category_id" => "required|integer|exists:categories,id",

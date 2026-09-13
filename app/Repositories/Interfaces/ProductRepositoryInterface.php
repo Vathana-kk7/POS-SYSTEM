@@ -6,4 +6,6 @@ interface ProductRepositoryInterface{
     public function all();
     public function findById(string $id);
     public function delete(string $id);
+    public function existsByBarcode(string $barcode): bool;
+    public function insertBulk(array $data):bool;
 }

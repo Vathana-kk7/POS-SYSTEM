@@ -3,6 +3,7 @@ namespace App\Repositories;
 
 use App\Models\Product;
 use App\Repositories\Interfaces\ProductRepositoryInterface;
+use Override;
 
 class ProductRepository implements ProductRepositoryInterface{
     public function create(array $data){
@@ -23,5 +24,14 @@ class ProductRepository implements ProductRepositoryInterface{
     }
     public function findById(string $id){
         return Product::findOrFail($id);
+    }
+     public function existsByBarcode(string $barcode): bool
+    {
+        return Product::where('barcode', $barcode)->exists();
+    }
+
+    public function insertBulk(array $data): bool
+    {
+        return Product::insert($data);
     }
 }
