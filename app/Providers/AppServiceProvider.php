@@ -30,6 +30,8 @@ use App\Repositories\StockmovementRepository;
 use App\Repositories\SupplierRepository;
 use App\Repositories\UniteRepository;
 use App\Repositories\UserRepository;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -103,6 +105,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        RateLimiter::for('products', function ($request){
+            return Limit::perMinute(300) ->by
+            ( $request->user()?->id ?? $request->ip());
+        });
     }
 }

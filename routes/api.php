@@ -59,8 +59,13 @@ Route::middleware('web')->group(function () {
 
         // Admin + Manager
         Route::middleware('role:Admin,Manager')->group(function () {
-            Route::post("/product/import",[ProductController::class,"import"]);
-            Route::apiResource('product', ProductController::class);
+            Route::middleware('throttle:products')->group(function () {
+                Route::get('/product/export/pdf', [ProductController::class, 'exportPdf']);
+                Route::get('/product/export/excel', [ ProductController::class, 'exportExcel' ]);
+                Route::post('/product/import', [ ProductController::class, 'import' ]);
+                Route::get('/product/state', [ ProductController::class, 'state' ]);
+                Route::apiResource('product', ProductController::class);
+            });
             Route::apiResource('supplier', SupplierController::class);
             Route::apiResource('purchase', PurchaseController::class);
             Route::apiResource('purchaseItem', PurchaseItemController::class);

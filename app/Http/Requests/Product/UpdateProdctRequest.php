@@ -21,7 +21,6 @@ class UpdateProdctRequest extends FormRequest
      */
     public function rules(): array
 {
-    // យក product id ចេញពី route params
     $productId = $this->route('product');
 
     return [
@@ -29,17 +28,27 @@ class UpdateProdctRequest extends FormRequest
         "stock_qty" => "required|integer",
         "cost_price" => "required|numeric",
         "description" => "nullable|string",
-        // លើកលែង product id នេះចេញ មិនបាច់គិត unique ឡើយពេល update
         "sku" => "required|string|unique:products,sku," . $productId,
-        "image" => "nullable|string",
+
+        // Only apply file validations if the input is actually an uploaded file
+        'image' => [
+            'nullable',
+            function ($attribute, $value, $fail) {
+                if ($value instanceof \Illuminate\Http\UploadedFile) {
+                    // Validate only when a new file is uploaded
+                    validator([$attribute => $value], [
+                        $attribute => 'file|image|mimes:jpg,jpeg,png,webp|max:5120'
+                    ])->validate();
+                }
+            },
+        ],
+
         "min_stock_level" => "required|integer",
         "status" => "required|string",
         "product_type" => "required|string",
         "selling_price" => "required|numeric",
         "brand_id" => "required|integer|exists:brands,id",
         "category_id" => "required|integer|exists:categories,id",
-        "supplier_ids" => "required|array",
-        "supplier_ids.*" => "required|integer|exists:suppliers,id",
     ];
 }
 }

@@ -18,9 +18,7 @@ class CategoryRepository implements CategoryRepositoryInterface
 
         if (!empty($filters['search'])) {
             $query->where(
-                'name',
-                'like',
-                '%' . trim($filters['search']) . '%'
+                'name','like','%' . trim($filters['search']) . '%'
             );
         }
 
