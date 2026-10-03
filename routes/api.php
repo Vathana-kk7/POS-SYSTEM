@@ -59,6 +59,10 @@ Route::middleware('web')->group(function () {
 
         // Admin + Manager
         Route::middleware('role:Admin,Manager')->group(function () {
+            Route::post('/supplier/import', [SupplierController::class, 'import']);
+            Route::get('/supplier/export/excel', [SupplierController::class, 'exportExcel']);
+            Route::get('/supplier/export/pdf', [SupplierController::class, 'exportPdf']);
+            Route::get('/supplier/stats', [SupplierController::class, 'stats']);
             Route::middleware('throttle:products')->group(function () {
                 Route::get('/product/export/pdf', [ProductController::class, 'exportPdf']);
                 Route::get('/product/export/excel', [ ProductController::class, 'exportExcel' ]);

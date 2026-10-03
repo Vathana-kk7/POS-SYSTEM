@@ -3,7 +3,7 @@
 namespace App\Http\Requests\Supplier;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Middleware\TrustProxies;
+use Illuminate\Validation\Rule;
 
 class UpdateSupplierRequest extends FormRequest
 {
@@ -23,9 +23,12 @@ class UpdateSupplierRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "name"=>"required|string|max:255",
-            "address"=>"required|string",
-            "phone"=>"required|string"
+            "name"=>"sometimes|required|string|max:255",
+            "contact_person"=>"nullable|string|max:255",
+            "email"=>["nullable","email","max:255",Rule::unique("suppliers","email")->ignore($this->route("supplier"))],
+            "address"=>"nullable|string|max:255",
+            "phone"=>"sometimes|required|string|max:30",
+            "status"=>"nullable|in:Active,Inactive",
         ];
     }
 }
