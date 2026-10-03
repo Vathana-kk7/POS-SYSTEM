@@ -4,10 +4,12 @@ namespace App\Services;
 use App\DTO\Order\CreateOrderDTO;
 use App\DTO\Order\UpdateOrderDTO;
 use App\Repositories\Interfaces\OrderRepositoryInterface;
+use App\Services\CustomerService;
 
 class OrderService{
     public function __construct(
-        private OrderRepositoryInterface $repo
+        private OrderRepositoryInterface $repo,
+        private CustomerService $customerService
     ){}
     public function create(CreateOrderDTO $dto)
     {
@@ -20,6 +22,7 @@ class OrderService{
             "order_status"=>$dto->order_status,
             "customer_id"=>$dto->customer_id,
         ]);
+        $this->customerService->clearStatsCache();
         return $result;
     }
     public function update(string $id,UpdateOrderDTO $dto)
@@ -36,6 +39,7 @@ class OrderService{
                 "customer_id"=>$dto->customer_id,
             ]
         );
+        $this->customerService->clearStatsCache();
         return $result;
     }
     public function all()
@@ -48,6 +52,8 @@ class OrderService{
     }
     public function delete(string $id)
     {
-        return $this->repo->delete($id);
+        $result = $this->repo->delete($id);
+        $this->customerService->clearStatsCache();
+        return $result;
     }
 }

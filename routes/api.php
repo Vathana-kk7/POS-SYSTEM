@@ -74,6 +74,10 @@ Route::middleware('web')->group(function () {
 
         // Admin + Manager + Staff
         Route::middleware('role:Admin,Manager,Staff')->group(function () {
+            Route::post('/customer/import', [CustomerController::class, 'import']);
+            Route::get('/customer/export/excel', [CustomerController::class, 'exportExcel']);
+            Route::get('/customer/export/pdf', [CustomerController::class, 'exportPdf']);
+            Route::get('/customer/stats', [CustomerController::class, 'stats']);
             Route::apiResource('customer', CustomerController::class);
             Route::apiResource('order', OrderController::class);
             Route::apiResource('orderItem', OrderItemController::class);

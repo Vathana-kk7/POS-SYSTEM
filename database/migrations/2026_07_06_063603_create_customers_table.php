@@ -14,8 +14,11 @@ return new class extends Migration
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
             $table->string("name");
+            $table->string("email")->nullable(); // បន្ថែម Email
             $table->string("phone");
-            $table->string("address");
+            $table->string("address")->nullable();
+            $table->string("group")->default('Standard'); // បន្ថែម Group
+            $table->string("status")->default('Active'); // បន្ថែម Status (Active / Inactive)
             $table->timestamps();
         });
     }

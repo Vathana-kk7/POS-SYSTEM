@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Customer;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreCustomerRequest extends FormRequest
 {
@@ -19,21 +20,38 @@ class StoreCustomerRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    public function rules(): array
+   public function rules(): array
     {
         return [
-            "name"=>[
+            "name" => [
                 "required",
                 "string",
                 "max:255",
             ],
-            "phone"=>[
+            "email" => [
+                "nullable",
+                "email",
+                "max:255",
+                Rule::unique("customers", "email"),
+            ],
+            "phone" => [
                 "required",
+                "string",
+                "max:20",
+            ],
+            "address" => [
+                "nullable",
                 "string",
             ],
-            "address"=>[
-                "required",
+            "group" => [
+                "nullable",
                 "string",
+                "in:Standard,VIP,Wholesale",
+            ],
+            "status" => [
+                "nullable",
+                "string",
+                "in:Active,Inactive",
             ],
         ];
     }

@@ -442,36 +442,14 @@ public function exportPdf(array $filters = [])
     |--------------------------------------------------------------------------
     */
 
-    $headerHtml = view('exports.products-pdf', [
-        'products' => collect(),
+    $html = view('exports.products-pdf', [
+        'products' => $products,
         'date' => now()->format('d-m-Y H:i'),
         'headerOnly' => true,
-        'chunkOnly' => false,
+        'chunkOnly' => true,
     ])->render();
 
-    $mpdf->WriteHTML($headerHtml);
-
-    /*
-    |--------------------------------------------------------------------------
-    | Products
-    |--------------------------------------------------------------------------
-    */
-
-    foreach ($products->chunk(5) as $chunk) {
-
-        $html = view('exports.products-pdf', [
-            'products' => $chunk,
-            'date' => now()->format('d-m-Y H:i'),
-
-            'headerOnly' => false,
-            'chunkOnly' => true,
-        ])->render();
-
-        $mpdf->WriteHTML(
-            $html,
-            \Mpdf\HTMLParserMode::HTML_BODY
-        );
-    }
+    $mpdf->WriteHTML($html);
 
     /*
     |--------------------------------------------------------------------------
