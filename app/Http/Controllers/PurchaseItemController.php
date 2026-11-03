@@ -29,15 +29,17 @@ class PurchaseItemController extends Controller
     }
     public function store(StorePurchaseItemRequest $request){
         try {
-            $result=$this->PurchaseItemService->create(
-            new CreatePurchaseItemDTO(
-                $request->purchase_id,
-                $request->product_id,
-                $request->quantity,
-                $request->cost_price,
-                $request->subtotal,
-            )
-        );
+            $result = $this->PurchaseItemService->create(
+                new CreatePurchaseItemDTO(
+                    $request->purchase_id,
+                    $request->product_id,
+                    $request->quantity,
+                    $request->cost_price,
+                    $request->discount ?? 0,
+                    $request->tax ?? 0,
+                    $request->subtotal,
+                )
+            );
         return response()->json([
             "status"=>"Create Success",
             "data"=>$result,
@@ -63,13 +65,15 @@ class PurchaseItemController extends Controller
     }
     public function update(string $id,UpdatePurchaseItemRequest $request){
         try {
-            $result=$this->PurchaseItemService->update(
+            $result = $this->PurchaseItemService->update(
                 $id,
                 new UpdatePurchaseItemDTO(
                     $request->purchase_id,
                     $request->product_id,
                     $request->quantity,
                     $request->cost_price,
+                    $request->discount ?? 0,
+                    $request->tax ?? 0,
                     $request->subtotal,
                 )
             );

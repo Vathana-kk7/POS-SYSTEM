@@ -8,7 +8,8 @@ use App\Http\Requests\Purchase\StorePurchaseRequest;
 use App\Http\Requests\Purchase\UpdatePurchaseRequest;
 use App\Models\Purchase;
 use App\Services\PurchaseService;
-use Illuminate\Http\Request;
+use App\DTO\Purchase\ReceivePurchaseDTO;
+use App\Http\Requests\Purchase\ReceivePurchaseRequest;
 
 class PurchaseController extends Controller
 {
@@ -18,6 +19,19 @@ class PurchaseController extends Controller
     /**
      * Display a listing of the resource.
      */
+    public function getstate(){
+        try {
+            $result=$this->PurchaseService->getstate();
+            return response()->json([
+                "status"=>"Getstate Success",
+                "data"=>$result,
+            ],200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "message"=>$th->getMessage(),
+            ],500);
+        }
+    }
     public function index()
     {
         try {
@@ -32,7 +46,6 @@ class PurchaseController extends Controller
             ],500);
         }
     }
-
     /**
      * Show the form for creating a new resource.
      */
@@ -47,23 +60,35 @@ class PurchaseController extends Controller
     public function store(StorePurchaseRequest $request)
     {
         try {
-            $result=$this->PurchaseService->create(
+            $data = $request->validated();
+
+            $result = $this->PurchaseService->create(
                 new CreatePurchaseDTO(
-                    $request->purchase_date,
-                    $request->total,
-                    $request->status,
-                    $request->supplier_id,
-                    $request->user_id,
-                )
+                    purchase_date: $data['purchase_date'],
+                    supplier_id: (int) $data['supplier_id'],
+                    // Get user ID from authenticated user
+                    user_id: (int) $request->user()->id,
+
+                    expected_delivery_date: $data['expected_delivery_date'] ?? null,
+                    discount: (float) ($data['discount'] ?? 0),
+                    tax: (float) ($data['tax'] ?? 0),
+                    shipping_cost: (float) ($data['shipping_cost'] ?? 0),
+                    payment_terms: $data['payment_terms'] ?? null,
+                    notes: $data['notes'] ?? null,
+                    status: $data['status'] ?? 'draft',
+                ),
+                $data['items'],
             );
+
             return response()->json([
-                "status"=>"Create Success",
-                "data"=>$result,
-            ],200);
+                'status' => 'Create Success',
+                'data' => $result,
+            ], 201);
+
         } catch (\Throwable $th) {
             return response()->json([
-                "message"=>$th->getMessage(),
-            ],500);
+                'message' => $th->getMessage(),
+            ], 500);
         }
     }
 
@@ -96,27 +121,37 @@ class PurchaseController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdatePurchaseRequest $request ,$id)
+    public function update(UpdatePurchaseRequest $request, $id)
     {
         try {
-            $result=$this->PurchaseService->update(
+            $data = $request->validated();
+
+            $result = $this->PurchaseService->update(
                 $id,
                 new UpdatePurchaseDTO(
-                    $request->purchase_date,
-                    $request->total,
-                    $request->status,
-                    $request->supplier_id,
-                    $request->user_id,
-                )
+                    purchase_date: $data['purchase_date'],
+                    supplier_id: (int) $data['supplier_id'],
+                    user_id: (int) $request->user()->id,
+                    expected_delivery_date: $data['expected_delivery_date'] ?? null,
+                    discount: (float) ($data['discount'] ?? 0),
+                    tax: (float) ($data['tax'] ?? 0),
+                    shipping_cost: (float) ($data['shipping_cost'] ?? 0),
+                    payment_terms: $data['payment_terms'] ?? null,
+                    notes: $data['notes'] ?? null,
+                    status: $data['status'] ?? 'draft',
+                ),
+                $data['items'],   // ← បន្ថែមនេះ
             );
+
             return response()->json([
-                "status"=>"Update Success",
-                "data"=>$result,
-            ],200);
+                'status' => 'Update Success',
+                'data' => $result,
+            ], 200);
+
         } catch (\Throwable $th) {
             return response()->json([
-                "message"=>$th->getMessage(),
-            ],500);
+                'message' => $th->getMessage(),
+            ], 500);
         }
     }
 
@@ -124,13 +159,46 @@ class PurchaseController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
-    {
+{
+    try {
+        $this->PurchaseService->delete($id);
+
+        return response()->json([
+            'status' => 'Delete Success',
+        ], 200);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json([
+            'message' => collect($e->errors())->flatten()->first(),
+        ], 422);
+    } catch (\Throwable $th) {
+        return response()->json([
+            'message' => $th->getMessage(),
+        ], 500);
+    }
+}
+    public function receive(
+        ReceivePurchaseRequest $request,
+    string $id
+    ) {
         try {
-            return $this->PurchaseService->delete($id);
-        } catch (\Throwable $th) {
+
+            $result = $this->PurchaseService->receiveStock(
+                new ReceivePurchaseDTO(
+                    (int) $id,
+                    $request->validated()['items'],
+                )
+            );
+
             return response()->json([
-                "message"=>$th->getMessage(),
-            ],500);
+                'status' => 'Receive Stock Success',
+                'data' => $result,
+            ], 200);
+
+        } catch (\Throwable $th) {
+
+            return response()->json([
+                'message' => $th->getMessage(),
+            ], 500);
         }
     }
 }

@@ -71,7 +71,9 @@ Route::middleware('web')->group(function () {
                 Route::apiResource('product', ProductController::class);
             });
             Route::apiResource('supplier', SupplierController::class);
+            Route::get('/purchase/state', [PurchaseController::class, 'getstate']);
             Route::apiResource('purchase', PurchaseController::class);
+            Route::post('/purchase/{purchase}/receive',[PurchaseController::class, 'receive']);
             Route::apiResource('purchaseItem', PurchaseItemController::class);
             Route::apiResource('stockMovement', StockMovementController::class);
         });

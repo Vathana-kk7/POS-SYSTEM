@@ -13,11 +13,17 @@ return new class extends Migration
     {
         Schema::create('purchase_item', function (Blueprint $table) {
             $table->id();
-            $table->foreignId("purchase_id")->constrained("purchases")->restrictOnDelete();
-            $table->foreignId("product_id")->constrained("products")->restrictOnDelete();
-            $table->integer("quantity");
-            $table->decimal("cost_price",10,2);
-            $table->decimal("subtotal",10,2);
+            $table->foreignId('purchase_id')->constrained('purchases') ->cascadeOnDelete();
+            $table->foreignId('product_id')->constrained('products') ->cascadeOnDelete();
+            $table->integer('quantity');
+            $table->unsignedInteger('received_quantity')->default(0);
+            // Purchase price per unit at the time of ordering
+            $table->decimal('cost_price', 12, 2);
+            // Optional item-level discount and tax
+            $table->decimal('discount', 12, 2)->default(0);
+            $table->decimal('tax', 12, 2)->default(0);
+            // Line total after discount and tax
+            $table->decimal('subtotal', 12, 2);
             $table->timestamps();
         });
     }

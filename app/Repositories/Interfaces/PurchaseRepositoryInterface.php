@@ -4,6 +4,8 @@ interface PurchaseRepositoryInterface{
     public function create(array $data);
     public function update(string $id,array $data);
     public function all();
+    public function getstate();
     public function findById(string $id);
     public function delete(string $id);
+    public function getLastPurchaseOrderNo(string $date);
 }

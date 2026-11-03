@@ -10,11 +10,19 @@ class Purchase extends Model
     use HasFactory;
 
     protected $fillable = [
-        "purchase_date",
-        "total",
-        "status",
-        "supplier_id",
-        "user_id",
+        'purchase_order_no',
+        'purchase_date',
+        'expected_delivery_date',
+        'supplier_id',
+        'user_id',
+        'subtotal',
+        'discount',
+        'tax',
+        'shipping_cost',
+        'total',
+        'payment_terms',
+        'status',
+        'notes',
     ];
 
 

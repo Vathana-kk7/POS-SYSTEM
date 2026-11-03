@@ -21,7 +21,7 @@ class PurchaseItemRepository implements PurchaseItemRepositoryInterface{
     }
     public function delete(string $id){
         $result=PurchaseItem::findOrFail($id);
-        $result->delete($id);
+        $result->delete();
         return $result;
     }
 }

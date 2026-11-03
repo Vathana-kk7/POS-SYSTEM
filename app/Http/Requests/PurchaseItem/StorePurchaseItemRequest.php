@@ -22,28 +22,46 @@ class StorePurchaseItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "purchase_id"=>[
-                "required",
-                "exists:purchases,id"
+            'purchase_id' => [
+                'required',
+                'integer',
+                'exists:purchases,id',
             ],
-            "product_id"=>[
-                "required",
-                "exists:products,id"
+
+            'product_id' => [
+                'required',
+                'integer',
+                'exists:products,id',
             ],
-            "quantity"=>[
-                "required",
-                "numeric",
-                "min:0"
+
+            'quantity' => [
+                'required',
+                'integer',
+                'min:1',
             ],
-            "cost_price"=>[
-                "required",
-                "numeric",
-                "min:0"
+
+            'cost_price' => [
+                'required',
+                'numeric',
+                'min:0',
             ],
-            "subtotal"=>[
-                "required",
-                "numeric",
-                "min:0"
+
+            'discount' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
+            'tax' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
+            'subtotal' => [
+                'required',
+                'numeric',
+                'min:0',
             ],
         ];
     }

@@ -11,13 +11,31 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('purchases', function (Blueprint $table) {
+       Schema::create('purchases', function (Blueprint $table) {
             $table->id();
-            $table->date("purchase_date");
-            $table->decimal("total",10,2);
-            $table->string("status");
-            $table->foreignId("supplier_id")->constrained("suppliers")->restrictOnDelete();
-            $table->foreignId("user_id")->constrained("users")->restrictOnDelete();
+            // Purchase Order Information
+            $table->string('purchase_order_no')->unique();
+            $table->date('purchase_date');
+            $table->date('expected_delivery_date')->nullable();
+            // Supplier
+            $table->foreignId('supplier_id')
+                ->constrained('suppliers')
+                ->restrictOnDelete();
+            // Staff who created the purchase order
+            $table->foreignId('user_id')
+                ->constrained('users')
+                ->restrictOnDelete();
+            // Financial Information
+            $table->decimal('subtotal', 12, 2)->default(0);
+            $table->decimal('discount', 12, 2)->default(0);
+            $table->decimal('tax', 12, 2)->default(0);
+            $table->decimal('shipping_cost', 12, 2)->default(0);
+            $table->decimal('total', 12, 2)->default(0);
+            // Payment and Status
+            $table->string('payment_terms')->nullable();
+            $table->string('status')->default('draft');
+            // Additional Information
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }
