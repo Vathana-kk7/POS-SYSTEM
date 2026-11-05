@@ -39,6 +39,8 @@ class PurchaseRepository implements PurchaseRepositoryInterface
         'user',
         'items.product',   // ← បន្ថែម
     ])
+    ->withCount('goodsReceipts')
+    ->withSum('payments as paid_amount', 'amount')
     ->latest()
     ->get();
 }
@@ -49,7 +51,10 @@ public function findById(string $id)
         'supplier',
         'user',
         'items.product',   // ← ប្តូរពី 'items' ទៅ 'items.product'
-    ])->findOrFail($id);
+    ])
+        ->withCount('goodsReceipts')
+        ->withSum('payments as paid_amount', 'amount')
+        ->findOrFail($id);
 }
 
 

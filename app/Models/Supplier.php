@@ -15,11 +15,21 @@ class Supplier extends Model
         "address",
         "phone",
         "status",
+        "bank_name",
+        "account_name",
+        "account_number",
+        "bakong_account_id",
+        "khqr_image",
     ];
 
     public function purchases()
     {
         return $this->hasMany(Purchase::class);
+    }
+
+    public function purchasePayments()
+    {
+        return $this->hasMany(PurchasePayment::class);
     }
     public function products()
     {

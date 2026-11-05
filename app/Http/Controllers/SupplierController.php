@@ -57,14 +57,20 @@ class SupplierController extends Controller
     public function store(StoreSupplierRequest $request)
     {
         try {
+            $data = $request->validated();
             $result=$this->SupplierService->create(
                 new CreateSupplierDTO(
-                    $request->name,
-                    $request->address ?? '',
-                    $request->phone,
-                    $request->contact_person,
-                    $request->email,
-                    $request->status ?? 'Active',
+                    $data['name'],
+                    $data['address'] ?? '',
+                    $data['phone'],
+                    $data['contact_person'] ?? null,
+                    $data['email'] ?? null,
+                    $data['status'] ?? 'Active',
+                    $data['bank_name'] ?? null,
+                    $data['account_name'] ?? null,
+                    $data['account_number'] ?? null,
+                    $data['bakong_account_id'] ?? null,
+                    $data['khqr_image'] ?? null,
                 )
             );
             return response()->json([
@@ -122,6 +128,11 @@ class SupplierController extends Controller
                     $data['contact_person'] ?? $supplier->contact_person,
                     array_key_exists('email', $data) ? $data['email'] : $supplier->email,
                     $data['status'] ?? $supplier->status,
+                    array_key_exists('bank_name', $data) ? $data['bank_name'] : $supplier->bank_name,
+                    array_key_exists('account_name', $data) ? $data['account_name'] : $supplier->account_name,
+                    array_key_exists('account_number', $data) ? $data['account_number'] : $supplier->account_number,
+                    array_key_exists('bakong_account_id', $data) ? $data['bakong_account_id'] : $supplier->bakong_account_id,
+                    $data['khqr_image'] ?? null,
                 )
             );
             return response()->json([

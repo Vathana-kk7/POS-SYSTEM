@@ -31,6 +31,7 @@ class ReceivePurchaseRequest extends FormRequest
             'items.*.purchase_item_id' => [
                 'required',
                 'integer',
+                'distinct',
                 'exists:purchase_item,id',
             ],
 

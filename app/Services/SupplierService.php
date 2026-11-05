@@ -10,6 +10,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -19,22 +20,36 @@ class SupplierService{
     public function __construct(private SupplierRepositoryInterface $repo){}
 
     public function create(CreateSupplierDTO $dto){
+        $data = [
+            "name"=>$dto->name,
+            "contact_person"=>$dto->contact_person,
+            "email"=>$dto->email,
+            "address"=>$dto->address,
+            "phone"=>$dto->phone,
+            "status"=>$dto->status,
+            "bank_name"=>$dto->bank_name,
+            "account_name"=>$dto->account_name,
+            "account_number"=>$dto->account_number,
+            "bakong_account_id"=>$dto->bakong_account_id,
+        ];
+        $imagePath = null;
         try {
-            $result=$this->repo->create([
-                "name"=>$dto->name,
-                "contact_person"=>$dto->contact_person,
-                "email"=>$dto->email,
-                "address"=>$dto->address,
-                "phone"=>$dto->phone,
-                "status"=>$dto->status,
-            ]);
-            $this->clearStatsCache();
-            return $result;
-        } catch (\Throwable $th) {
-            return response()->json([
-                "message"=>$th->getMessage(),
-            ],500);
+            if ($dto->khqr_image) {
+                $imagePath = $dto->khqr_image->store('suppliers/khqr', 'public');
+                if (!$imagePath) {
+                    throw new \RuntimeException('Unable to store supplier KHQR image.');
+                }
+                $data['khqr_image'] = $imagePath;
+            }
+            $result=$this->repo->create($data);
+        } catch (\Throwable $exception) {
+            if ($imagePath) {
+                Storage::disk('public')->delete($imagePath);
+            }
+            throw $exception;
         }
+        $this->clearStatsCache();
+        return $result;
     }
 
     public function getAll(int $perPage = 10, array $filters = [])
@@ -45,25 +60,40 @@ class SupplierService{
         return $this->repo->findById($id);
     }
     public function update($id,UpdateSupplierDTO $dto){
+        $supplier = $this->repo->findById($id);
+        $data = [
+            "name"=>$dto->name,
+            "contact_person"=>$dto->contact_person,
+            "email"=>$dto->email,
+            "address"=>$dto->address,
+            "phone"=>$dto->phone,
+            "status"=>$dto->status,
+            "bank_name"=>$dto->bank_name,
+            "account_name"=>$dto->account_name,
+            "account_number"=>$dto->account_number,
+            "bakong_account_id"=>$dto->bakong_account_id,
+        ];
+        $newImagePath = null;
         try {
-            $result=$this->repo->update(
-                $id,
-                    [
-                        "name"=>$dto->name,
-                        "contact_person"=>$dto->contact_person,
-                        "email"=>$dto->email,
-                        "address"=>$dto->address,
-                        "phone"=>$dto->phone,
-                        "status"=>$dto->status,
-                    ]
-            );
-            $this->clearStatsCache();
-            return $result;
-        } catch (\Throwable $th) {
-            return response()->json([
-                "message"=>$th->getMessage(),
-            ],500);
+            $newImagePath = $dto->khqr_image?->store('suppliers/khqr', 'public');
+            if ($dto->khqr_image && !$newImagePath) {
+                throw new \RuntimeException('Unable to store supplier KHQR image.');
+            }
+            if ($newImagePath) {
+                $data['khqr_image'] = $newImagePath;
+            }
+            $result = $this->repo->update($id, $data);
+        } catch (\Throwable $exception) {
+            if ($newImagePath) {
+                Storage::disk('public')->delete($newImagePath);
+            }
+            throw $exception;
         }
+        if ($newImagePath && $supplier->khqr_image) {
+            Storage::disk('public')->delete($supplier->khqr_image);
+        }
+        $this->clearStatsCache();
+        return $result;
     }
     public function delete(string $id){
         $result = $this->repo->delete($id);

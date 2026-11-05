@@ -8,8 +8,7 @@ use App\Http\Requests\Purchase\StorePurchaseRequest;
 use App\Http\Requests\Purchase\UpdatePurchaseRequest;
 use App\Models\Purchase;
 use App\Services\PurchaseService;
-use App\DTO\Purchase\ReceivePurchaseDTO;
-use App\Http\Requests\Purchase\ReceivePurchaseRequest;
+use Illuminate\Validation\ValidationException;
 
 class PurchaseController extends Controller
 {
@@ -85,6 +84,11 @@ class PurchaseController extends Controller
                 'data' => $result,
             ], 201);
 
+        } catch (ValidationException $exception) {
+            return response()->json([
+                'message' => collect($exception->errors())->flatten()->first(),
+                'errors' => $exception->errors(),
+            ], 422);
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => $th->getMessage(),
@@ -148,6 +152,11 @@ class PurchaseController extends Controller
                 'data' => $result,
             ], 200);
 
+        } catch (ValidationException $exception) {
+            return response()->json([
+                'message' => collect($exception->errors())->flatten()->first(),
+                'errors' => $exception->errors(),
+            ], 422);
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => $th->getMessage(),
@@ -176,29 +185,4 @@ class PurchaseController extends Controller
         ], 500);
     }
 }
-    public function receive(
-        ReceivePurchaseRequest $request,
-    string $id
-    ) {
-        try {
-
-            $result = $this->PurchaseService->receiveStock(
-                new ReceivePurchaseDTO(
-                    (int) $id,
-                    $request->validated()['items'],
-                )
-            );
-
-            return response()->json([
-                'status' => 'Receive Stock Success',
-                'data' => $result,
-            ], 200);
-
-        } catch (\Throwable $th) {
-
-            return response()->json([
-                'message' => $th->getMessage(),
-            ], 500);
-        }
-    }
 }

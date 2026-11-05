@@ -22,6 +22,7 @@ class Purchase extends Model
         'total',
         'payment_terms',
         'status',
+        'payment_status',
         'notes',
     ];
 
@@ -41,5 +42,15 @@ class Purchase extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function goodsReceipts()
+    {
+        return $this->hasMany(GoodsReceipt::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(PurchasePayment::class);
     }
 }

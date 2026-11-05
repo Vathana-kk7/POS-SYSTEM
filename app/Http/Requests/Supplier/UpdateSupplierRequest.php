@@ -29,6 +29,11 @@ class UpdateSupplierRequest extends FormRequest
             "address"=>"nullable|string|max:255",
             "phone"=>"sometimes|required|string|max:30",
             "status"=>"nullable|in:Active,Inactive",
+            "bank_name"=>"sometimes|nullable|string|max:255",
+            "account_name"=>"sometimes|nullable|string|max:255",
+            "account_number"=>"sometimes|nullable|string|max:255",
+            "bakong_account_id"=>"sometimes|nullable|string|max:255",
+            "khqr_image"=>"sometimes|nullable|image|max:5120",
         ];
     }
 }

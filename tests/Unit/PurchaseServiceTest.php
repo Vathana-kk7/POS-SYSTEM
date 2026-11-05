@@ -7,12 +7,25 @@ use App\Repositories\Interfaces\PurchaseItemRepositoryInterface;
 use App\Repositories\Interfaces\PurchaseRepositoryInterface;
 use App\Services\PurchaseService;
 use App\Services\SupplierService;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Mockery;
 use Tests\TestCase;
 
 class PurchaseServiceTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Carbon::setTestNow('2026-10-05 12:00:00');
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
+
     public function test_it_creates_purchase_and_items_with_calculated_totals(): void
     {
         DB::shouldReceive('transaction')

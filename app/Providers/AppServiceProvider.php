@@ -6,10 +6,12 @@ use App\Repositories\BankRepository;
 use App\Repositories\BrandRepository;
 use App\Repositories\CategoryRepository;
 use App\Repositories\CustomerRepository;
+use App\Repositories\GoodsReceiptRepository;
 use App\Repositories\Interfaces\BankRepositoryInterface;
 use App\Repositories\Interfaces\BrandRepositoryInterface;
 use App\Repositories\Interfaces\CategoryRepositoryInterface;
 use App\Repositories\Interfaces\CustomerRepositoryInterface;
+use App\Repositories\Interfaces\GoodsReceiptRepositoryInterface;
 use App\Repositories\Interfaces\OrderItemRepositoryInterface;
 use App\Repositories\Interfaces\OrderPaymentMethodRepositoryInterface;
 use App\Repositories\Interfaces\OrderRepositoryInterface;
@@ -69,6 +71,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             PurchaseItemRepositoryInterface::class,
             PurchaseItemRepository::class,
+        );
+        $this->app->bind(
+            GoodsReceiptRepositoryInterface::class,
+            GoodsReceiptRepository::class,
         );
         $this->app->bind(
             StockmovementRepositoryInterface::class,

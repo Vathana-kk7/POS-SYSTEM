@@ -8,6 +8,7 @@ use App\Http\Requests\PurchaseItem\StorePurchaseItemRequest;
 use App\Http\Requests\PurchaseItem\UpdatePurchaseItemRequest;
 use App\Services\PurchaseItemService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class PurchaseItemController extends Controller
 {
@@ -44,6 +45,11 @@ class PurchaseItemController extends Controller
             "status"=>"Create Success",
             "data"=>$result,
         ],200);
+        } catch (ValidationException $exception) {
+            return response()->json([
+                "message" => collect($exception->errors())->flatten()->first(),
+                "errors" => $exception->errors(),
+            ], 422);
         } catch (\Throwable $th) {
             return response()->json([
                 "message"=>$th->getMessage(),
@@ -82,6 +88,11 @@ class PurchaseItemController extends Controller
                 "status"=>"Update Success",
                 "data"=>$result,
             ],200);
+        } catch (ValidationException $exception) {
+            return response()->json([
+                "message" => collect($exception->errors())->flatten()->first(),
+                "errors" => $exception->errors(),
+            ], 422);
         } catch (\Throwable $th) {
             return response()->json([
                 "message"=>$th->getMessage(),
@@ -94,6 +105,11 @@ class PurchaseItemController extends Controller
             return response()->json([
                 "status"=>"Delete Success",
             ],200);
+        } catch (ValidationException $exception) {
+            return response()->json([
+                "message" => collect($exception->errors())->flatten()->first(),
+                "errors" => $exception->errors(),
+            ], 422);
         } catch (\Throwable $th) {
             return response()->json([
                 "message"=>$th->getMessage(),

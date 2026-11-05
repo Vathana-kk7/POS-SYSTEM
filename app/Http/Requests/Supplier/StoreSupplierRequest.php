@@ -28,6 +28,11 @@ class StoreSupplierRequest extends FormRequest
             "address"=>"nullable|string|max:255",
             "phone"=>"required|string|max:30",
             "status"=>"nullable|in:Active,Inactive",
+            "bank_name"=>"nullable|string|max:255",
+            "account_name"=>"nullable|string|max:255",
+            "account_number"=>"nullable|string|max:255",
+            "bakong_account_id"=>"nullable|string|max:255",
+            "khqr_image"=>"nullable|image|max:5120",
         ];
     }
 }

@@ -6,11 +6,12 @@ use App\DTO\Purchase\CreatePurchaseDTO;
 use App\DTO\Purchase\UpdatePurchaseDTO;
 use App\Repositories\Interfaces\PurchaseRepositoryInterface;
 use App\Repositories\Interfaces\PurchaseItemRepositoryInterface;
-use App\DTO\Purchase\ReceivePurchaseDTO;
+use App\Models\Purchase;
+use App\Models\PurchasePayment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Cache;
-use PhpParser\Node\Expr\FuncCall;
+use Illuminate\Support\Facades\Storage;
 
 class PurchaseService
 {
@@ -103,6 +104,16 @@ class PurchaseService
     public function update(string $id, UpdatePurchaseDTO $dto, array $items )
     {
         $purchase = DB::transaction(function () use ($id, $dto, $items) {
+            $lockedPurchase = Purchase::query()->lockForUpdate()->findOrFail($id);
+            if (
+                $lockedPurchase->goodsReceipts()->exists()
+                || $lockedPurchase->items()->where('received_quantity', '>', 0)->exists()
+                || $lockedPurchase->payments()->exists()
+            ) {
+                throw ValidationException::withMessages([
+                    'purchase' => 'A purchase order with receipts or payments cannot be edited.',
+                ]);
+            }
 
             $subtotal = 0;
             $itemDiscount = 0;
@@ -198,12 +209,15 @@ class PurchaseService
     public function delete(string $id)
     {
         $result = DB::transaction(function () use ($id) {
-            $purchase = $this->repo->findById($id);
+            $purchase = Purchase::query()->lockForUpdate()->findOrFail($id);
 
-            // មិនអនុញ្ញាតលុប បើបាន receive stock រួច (stock ក្នុង Product នឹងមិនត្រូវគ្នា)
-            if ($purchase->items->sum('received_quantity') > 0) {
+            if (
+                $purchase->goodsReceipts()->exists()
+                || $purchase->items()->where('received_quantity', '>', 0)->exists()
+                || $purchase->payments()->exists()
+            ) {
                 throw ValidationException::withMessages([
-                    'purchase' => 'Cannot delete a purchase that has already received stock.',
+                    'purchase' => 'A purchase order with receipts or payments cannot be deleted.',
                 ]);
             }
 
@@ -238,69 +252,65 @@ class PurchaseService
             STR_PAD_LEFT
         );
     }
-    /**
- * Receive Purchase Stock
- */
-    public function receiveStock(ReceivePurchaseDTO $dto)
-{
-    $purchase = DB::transaction(function () use ($dto) {
-        $purchase = $this->repo->findById($dto->purchase_id);
-
-        // អនុញ្ញាត receive តែ approved / partial
-        if (!in_array($purchase->status, ['approved', 'partial'])) {
-            throw ValidationException::withMessages([
-                'purchase' => 'Only approved or partially received purchases can receive stock.',
-            ]);
+    public function recordPayment(int $purchaseId, int $userId, array $data)
+    {
+        $proofFile = $data['proof_image'] ?? null;
+        $proofPath = $proofFile?->store('purchase-payments/proofs', 'public');
+        if ($proofFile && !$proofPath) {
+            throw new \RuntimeException('Unable to store payment proof image.');
         }
 
-        foreach ($dto->items as $item) {
-            $purchaseItem = $purchase->items()
-                ->where('id', $item['purchase_item_id'])
-                ->lockForUpdate()
-                ->first();
+        try {
+            $payment = DB::transaction(function () use ($purchaseId, $userId, $data, $proofPath) {
+                $purchase = Purchase::query()->lockForUpdate()->findOrFail($purchaseId);
+                if (!in_array($purchase->status, ['approved', 'partial', 'received'], true)) {
+                    throw ValidationException::withMessages([
+                        'purchase' => 'Payments can only be recorded for approved or received purchases.',
+                    ]);
+                }
 
-            if (!$purchaseItem) {
-                throw ValidationException::withMessages([
-                    'items' => "Purchase item {$item['purchase_item_id']} does not belong to this purchase.",
+                $totalCents = (int) round((float) $purchase->total * 100);
+                $paidCents = (int) round((float) PurchasePayment::query()
+                    ->where('purchase_id', $purchase->id)
+                    ->sum('amount') * 100);
+                $amountCents = (int) round((float) $data['amount'] * 100);
+                $balanceCents = max(0, $totalCents - $paidCents);
+
+                if ($amountCents > $balanceCents) {
+                    throw ValidationException::withMessages([
+                        'amount' => 'Payment amount cannot exceed the purchase balance due.',
+                    ]);
+                }
+
+                $payment = PurchasePayment::create([
+                    'purchase_id' => $purchase->id,
+                    'supplier_id' => $purchase->supplier_id,
+                    'amount' => number_format($amountCents / 100, 2, '.', ''),
+                    'method' => $data['method'],
+                    'reference_no' => $data['reference_no'],
+                    'proof_image' => $proofPath,
+                    'notes' => $data['notes'] ?? null,
                 ]);
-            }
 
-            $qty = (int) $item['received_quantity'];
-            $remaining = $purchaseItem->quantity - $purchaseItem->received_quantity;
-
-            if ($qty > $remaining) {
-                throw ValidationException::withMessages([
-                    'items' => "Received quantity cannot exceed remaining quantity for purchase item {$purchaseItem->id}.",
+                $purchase->update([
+                    'payment_status' => $amountCents === $balanceCents ? 'paid' : 'partial',
                 ]);
+
+                return $payment->fresh(['purchase', 'supplier']);
+            });
+        } catch (\Throwable $exception) {
+            if ($proofPath) {
+                Storage::disk('public')->delete($proofPath);
             }
-
-            // 1. Update received quantity
-            $purchaseItem->increment('received_quantity', $qty);
-
-            // 2. Update product stock
-            $purchaseItem->product->increment('stock_qty', $qty);
+            throw $exception;
         }
 
-        // 3. គណនា status
-        $purchase->load('items');
-        $totalOrdered  = (int) $purchase->items->sum('quantity');
-        $totalReceived = (int) $purchase->items->sum('received_quantity');
+        Cache::forget("purchase_by_id_{$purchaseId}");
+        $this->clearPurchaseCache();
 
-        $purchase->update([
-            'status' => $totalReceived >= $totalOrdered ? 'received' : 'partial',
-        ]);
+        return $payment;
+    }
 
-        return $purchase->fresh(['supplier', 'user', 'items.product']);
-    });
-
-    // សម្អាត cache ក្រោយ transaction commit
-    Cache::forget("purchase_by_id_{$dto->purchase_id}");
-    $this->clearPurchaseCache();
-    $this->clearProductCache();
-    $this->supplierService->clearStatsCache();
-
-    return $purchase;
-}
     private function clearPurchaseCache(): void
     {
         Cache::forget('purchase_state');
@@ -311,16 +321,4 @@ class PurchaseService
         }
     }
 
-    private function clearProductCache(): void
-    {
-        // ⚠️ ត្រូវតែដូចអ្វីដែល ProductService ប្រើ
-        Cache::forget('product_state');
-
-
-        if (Cache::has('products_cache_version')) {
-            Cache::increment('products_cache_version');
-        } else {
-            Cache::put('products_cache_version', 2);
-        }
-    }
 }
